@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предпросмотр печати - OPAC-Global</title>
+    <link rel="stylesheet" href="styles.css" id="main-style">
+    <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+	
+	
+    <style>
+        /* Основные стили для печати */
+        #print-area {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            padding: 5mm;
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            position: relative;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Сетка для разрезки */
+        #print-area::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(to right, #ccc 0, rgba(255,255,255,0) 1px),
+                linear-gradient(to bottom, #ccc 0, rgba(255,255,255,0) 1px);
+            background-size: 48mm 25mm;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .barcode-item {
+            width: 48mm;
+            height: 25mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            border: 1px dashed transparent;
+            page-break-inside: avoid;
+        }
+        
+        /* Границы для визуального разделения */
+        .barcode-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px dashed #ccc;
+            pointer-events: none;
+        }
+        
+        .barcode-lines {
+            display: flex;
+            height: 15mm;
+            align-items: center;
+            margin-bottom: 1mm;
+            justify-content: center;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .barcode-line {
+            height: 15mm;
+            border-left: 0.3mm solid black;
+            margin-right: 0.3mm;
+            flex-shrink: 0;
+        }
+        
+        .barcode-space {
+            height: 15mm;
+            border-left: 0.3mm solid white;
+            margin-right: 0.3mm;
+            flex-shrink: 0;
+        }
+        
+        .barcode-text {
+            font-size: 10px;
+            text-align: center;
+            word-break: break-all;
+            max-width: 46mm;
+            color: black !important;
+            padding: 0 1mm;
+            box-sizing: border-box;
+        }
+        
+        /* Стили для интерфейса предпросмотра */
+        .print-preview-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            margin-bottom: 20px;
+        }
+        
+        .print-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .print-action-button {
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .print-action-button:hover {
+            background: var(--primary-hover);
+        }
+        
+        .print-action-button.secondary {
+            background: var(--secondary-color);
+        }
+        
+        .print-action-button.secondary:hover {
+            background: var(--secondary-hover);
+        }
+        
+        /* Стили для печати */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 5mm;
+                box-shadow: none;
+                background: white !important;
+            }
+            #print-area::before {
+                background-image: 
+                    linear-gradient(to right, #ccc 0, rgba(255,255,255,0) 1px),
+                    linear-gradient(to bottom, #ccc 0, rgba(255,255,255,0) 1px);
+                background-size: 48mm 25mm;
+            }
+            .barcode-item {
+                height: 25mm;
+                border: 1px dashed #ccc !important;
+            }
+            .barcode-item::after {
+                display: none;
+            }
+            .barcode-line {
+                border-left-color: black !important;
+            }
+            .barcode-space {
+                border-left-color: white !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar" id="sidebar">
+            <ul class="menu">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="marking.html">Маркировка</a></li>
+                <li><a href="inventory.html">Инвентаризация</a></li>
+                <li><a href="personnel.html">Персоналии</a></li>
+				<li><a href="setting.html">Настройки</a></li>
+				<li> <a href="login.html">Выход</a></li>
+            </ul>
+        </nav>
+        
+        <button class="menu-button" onclick="toggleMenu()">☰</button>
+        
+        <main class="content">
+            <div class="header">
+                <h1>Предпросмотр печати</h1>
+                <p>Список номеров для печати</p>
+            </div>
+            
+            <div class="print-preview-container">
+                <div id="print-area"></div>
+                
+                <div class="print-actions">
+                    <button onclick="printBarcodes()" class="print-action-button">Печать</button>
+                    <button onclick="window.history.back()" class="print-action-button secondary">Назад</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Код для генерации Code39 штрих-кодов
+        const code39 = {
+            '0': 'bwbwwwbbbwbbbwbw', '1': 'bbbwbwwwbwbwbbbw',
+            '2': 'bwbbbwwwbwbwbbbw', '3': 'bbbwbbbwwwbwbwbw',
+            '4': 'bwbwwwbbbwbwbbbw', '5': 'bbbwbwwwbbbwbwbw',
+            '6': 'bwbbbwwwbbbwbwbw', '7': 'bwbwwwbwbbbwbbbw',
+            '8': 'bbbwbwwwbwbbbwbw', '9': 'bwbbbwwwbwbbbwbw',
+            'A': 'bbbwbwbwwwbwbbbw', 'B': 'bwbbbwbwwwbwbbbw',
+            'C': 'bbbwbbbwbwwwbwbw', 'D': 'bwbwbbbwwwbwbbbw',
+            'E': 'bbbwbwbbbwwwbwbw', 'F': 'bwbbbwbbbwwwbwbw',
+            'G': 'bwbwbwwwbbbwbbbw', 'H': 'bbbwbwbwwwbbbwbw',
+            'I': 'bwbbbwbwwwbbbwbw', 'J': 'bwbwbbbwwwbbbwbw',
+            'K': 'bbbwbwbwbwwwbbbw', 'L': 'bwbbbwbwbwwwbbbw',
+            'M': 'bbbwbbbwbwbwwwbw', 'N': 'bwbwbbbwbwwwbbbw',
+            'O': 'bbbwbwbbbwbwwwbw', 'P': 'bwbbbwbbbwbwwwbw',
+            'Q': 'bwbwbwbbbwwwbbbw', 'R': 'bbbwbwbwbbbwwwbw',
+            'S': 'bwbbbwbwbbbwwwbw', 'T': 'bwbwbbbwbbbwwwbw',
+            'U': 'bbbwwwbwbwbwbbbw', 'V': 'bwwwbbbwbwbwbbbw',
+            'W': 'bbbwwwbbbwbwbwbw', 'X': 'bwwwbwbbbwbwbbbw',
+            'Y': 'bbbwwwbwbbbwbwbw', 'Z': 'bwwwbbbwbbbwbwbw',
+            '-': 'bwwwbwbwbbbwbbbw', '.': 'bbbwwwbwbwbbbwbw',
+            ' ': 'bwwwbbbwbwbbbwbw', '*': 'bwwwbwbbbwbbbwbw',
+            '$': 'bwwwbwwwbwwwbwbw', '/': 'bwwwbwwwbwbwwwbw',
+            '+': 'bwwwbwbwwwbwwwbw', '%': 'bwbwwwbwwwbwwwbw'
+        };
+
+        function generateBarcodeElement(text) {
+            if (!/^[A-Z0-9-. $+\/%]+$/i.test(text)) {
+                console.error('Недопустимые символы в штрих-коде:', text);
+                return null;
+            }
+
+            const fullText = '*' + text.toUpperCase() + '*';
+            let barcodePattern = '';
+
+            for (const char of fullText) {
+                barcodePattern += code39[char] || '';
+            }
+
+            const barcodeItem = document.createElement('div');
+            barcodeItem.className = 'barcode-item';
+            
+            const barcodeLines = document.createElement('div');
+            barcodeLines.className = 'barcode-lines';
+            
+            for (const bit of barcodePattern) {
+                const line = document.createElement('span');
+                line.className = bit === 'b' ? 'barcode-line' : 'barcode-space';
+                barcodeLines.appendChild(line);
+            }
+            
+            const barcodeText = document.createElement('div');
+            barcodeText.className = 'barcode-text';
+            barcodeText.textContent = text;
+            
+            barcodeItem.appendChild(barcodeLines);
+            barcodeItem.appendChild(barcodeText);
+            
+            return barcodeItem;
+        }
+
+        function printBarcodes() {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @page {
+                    size: A4;
+                    margin: 0;
+                }
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: white !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            window.print();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const numbersJson = params.get('numbers');
+            const printArea = document.getElementById('print-area');
+            
+            if (numbersJson) {
+                const numbers = JSON.parse(decodeURIComponent(numbersJson));
+                
+                numbers.forEach(num => {
+                    const barcodeElement = generateBarcodeElement(num);
+                    if (barcodeElement) {
+                        printArea.appendChild(barcodeElement);
+                    }
+                });
+            }
+        });
+        
+        function toggleMenu() {
+            document.getElementById("sidebar").classList.toggle("collapsed");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+body.high-contrast {
+  background-color: black !important;
+  color: yellow !important;
+}
+
+.high-contrast a {
+  color: cyan !important;
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast select {
+  background-color: black !important;
+  color: yellow !important;
+  border: 2px solid yellow !important;
+}

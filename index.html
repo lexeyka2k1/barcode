@@ -6,22 +6,19 @@
     <title>Главная - Сервис штрихкодирования</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+	  <link rel="stylesheet" href="high-contrast.css">
+  <link rel="stylesheet" href="grayscale.css">
 </head>
 <body>
     <div class="container">
         <nav class="sidebar" id="sidebar">
-            <ul id="menu" class="menu">
-                <li><a href="index.html" class="active">Главная</a></li>
+            <ul class="menu">
+                <li><a href="index.html">Главная</a></li>
                 <li><a href="marking.html">Маркировка</a></li>
                 <li><a href="inventory.html">Инвентаризация</a></li>
                 <li><a href="personnel.html">Персоналии</a></li>
+				<li><a href="setting.html">Настройки</a></li>
 				<li> <a href="login.html">Выход</a></li>
-				<li><a href="settings.html">Настройки</a></li>
-                <li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
             </ul>
         </nav>
         
@@ -112,6 +109,91 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         }
+		
+		 const settings = {
+      theme: 'light',
+      animation: true,
+      contrast: false,
+      grayscale: false,
+      fontSize: 1
+    };
+
+    function applySettings() {
+      document.body.classList.toggle('high-contrast', settings.contrast);
+      document.body.classList.toggle('grayscale', settings.grayscale);
+      document.documentElement.style.setProperty('--animation-duration', settings.animation ? '0.3s' : '0s');
+      document.body.style.fontSize = `${settings.fontSize}em`;
+      
+      // Сохраняем настройки в localStorage
+      localStorage.setItem('appSettings', JSON.stringify(settings));
+    }
+
+    function toggleMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    // Загрузка сохраненных настроек
+    function loadSettings() {
+      const savedSettings = localStorage.getItem('appSettings');
+      if (savedSettings) {
+        Object.assign(settings, JSON.parse(savedSettings));
+        
+        // Применяем загруженные настройки
+        document.getElementById('toggle-animation').checked = settings.animation;
+        document.getElementById('toggle-contrast').checked = settings.contrast;
+        document.getElementById('toggle-grayscale').checked = settings.grayscale;
+        
+        applySettings();
+      }
+    }
+
+    document.getElementById('toggle-theme').addEventListener('click', () => {
+      const lightTheme = document.getElementById('light-theme');
+      const mainStyle = document.getElementById('main-style');
+      
+      if (lightTheme.disabled) {
+        lightTheme.disabled = false;
+        mainStyle.disabled = true;
+        settings.theme = 'light';
+      } else {
+        lightTheme.disabled = true;
+        mainStyle.disabled = false;
+        settings.theme = 'dark';
+      }
+      
+      applySettings();
+    });
+
+    document.getElementById('toggle-animation').addEventListener('change', e => {
+      settings.animation = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('toggle-contrast').addEventListener('change', e => {
+      settings.contrast = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('toggle-grayscale').addEventListener('change', e => {
+      settings.grayscale = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('increase-font').addEventListener('click', () => {
+      settings.fontSize = Math.min(1.5, settings.fontSize + 0.1);
+      applySettings();
+    });
+
+    document.getElementById('decrease-font').addEventListener('click', () => {
+      settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
+      applySettings();
+    });
+
+    // Инициализация при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+    });
     </script>
 </body>
 </html>
