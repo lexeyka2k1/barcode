@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки интерфейса - OPAC-Global</title>
+  <link rel="stylesheet" href="styles.css" id="main-style">
+  <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+  <link rel="stylesheet" href="high-contrast.css">
+  <link rel="stylesheet" href="grayscale.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 250px;
+      background: var(--sidebar-bg);
+      padding: 20px;
+      padding-top: 60px;
+      z-index: 100;
+      transform: translateX(0);
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+
+    .menu-button {
+      position: fixed;
+      left: 10px;
+      top: 10px;
+      background: var(--menu-item-bg);
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed ~ .menu-button {
+      left: 20px;
+    }
+
+    .menu {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .menu li {
+      margin-bottom: 10px;
+    }
+
+    .menu a {
+      color: var(--text-color);
+      text-decoration: none;
+      display: block;
+      padding: 10px 15px;
+      background: var(--menu-item-bg);
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .menu a:hover {
+      background: var(--menu-item-hover);
+    }
+
+    .menu a.active {
+      background: var(--menu-item-active);
+      color: white;
+    }
+
+    .theme-toggle {
+      background: var(--menu-item-bg);
+      color: var(--text-color);
+      border: none;
+      padding: 10px 15px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 100px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--menu-item-hover);
+    }
+
+    .theme-icon {
+      font-size: 1.2em;
+    }
+
+    .content {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      padding: 20px;
+      background: var(--content-bg);
+      overflow-y: auto;
+      transition: margin-left 0.3s ease;
+    }
+
+    .sidebar.collapsed ~ .content {
+      margin-left: 0;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--text-color);
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      color: var(--text-muted);
+    }
+
+    #settings-panel {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow-color);
+    }
+
+    .settings-section {
+      margin-bottom: 30px;
+    }
+
+    .settings-section h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--text-color);
+      font-size: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      background: var(--menu-item-bg);
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .setting-item:hover {
+      background: var(--menu-item-hover);
+    }
+
+    .setting-label {
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setting-button {
+      padding: 10px 15px;
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .setting-button:hover {
+      background: var(--secondary-hover);
+    }
+
+    .setting-button.primary {
+      background: var(--primary-color);
+    }
+
+    .setting-button.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .checkbox-container {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .checkbox-container input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--menu-item-bg);
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .checkbox-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: var(--primary-color);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .checkbox-slider {
+      background-color: var(--primary-hover);
+    }
+
+    input:checked + .checkbox-slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 220px;
+      }
+      
+      .content {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+      }
+      
+      #settings-panel {
+        padding: 20px;
+      }
+      
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .setting-control {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="sidebar" id="sidebar">
+            <ul class="menu">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="marking.html">Маркировка</a></li>
+                <li><a href="inventory.html">Инвентаризация</a></li>
+                <li><a href="personnel.html">Персоналии</a></li>
+				<li><a href="setting.html">Настройки</a></li>
+				<li> <a href="login.html">Выход</a></li>
+            </ul>
+        </nav>
+    
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+    
+    <main class="content">
+      <div class="header">
+        <h1>Настройки интерфейса</h1>
+        <p>Персонализация внешнего вида системы</p>
+      </div>
+      
+      <div id="settings-panel">
+        <div class="settings-section">
+          <h2>Внешний вид</h2>
+          <div class="settings-group">
+            <div class="setting-item">
+              <span class="setting-label">Цветовая тема</span>
+              <div class="setting-control">
+                <button id="toggle-theme" class="setting-button primary">Сменить тему</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h2>Доступность</h2>
+          <div class="settings-group">
+            <div class="setting-item">
+              <span class="setting-label">Анимация элементов</span>
+              <div class="setting-control">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="toggle-animation" checked>
+                  <span class="checkbox-slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <span class="setting-label">Высококонтрастный режим</span>
+              <div class="setting-control">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="toggle-contrast">
+                  <span class="checkbox-slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <span class="setting-label">Черно-белый режим</span>
+              <div class="setting-control">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="toggle-grayscale">
+                  <span class="checkbox-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h2>Размер текста</h2>
+          <div class="settings-group">
+            <div class="setting-item">
+              <span class="setting-label">Масштабирование</span>
+              <div class="setting-control">
+                <button id="decrease-font" class="setting-button">Уменьшить</button>
+                <button id="increase-font" class="setting-button">Увеличить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const settings = {
+      theme: 'light',
+      animation: true,
+      contrast: false,
+      grayscale: false,
+      fontSize: 1
+    };
+
+    function applySettings() {
+      document.body.classList.toggle('high-contrast', settings.contrast);
+      document.body.classList.toggle('grayscale', settings.grayscale);
+      document.documentElement.style.setProperty('--animation-duration', settings.animation ? '0.3s' : '0s');
+      document.body.style.fontSize = `${settings.fontSize}em`;
+      
+      // Сохраняем настройки в localStorage
+      localStorage.setItem('appSettings', JSON.stringify(settings));
+    }
+
+    function toggleMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    // Загрузка сохраненных настроек
+    function loadSettings() {
+      const savedSettings = localStorage.getItem('appSettings');
+      if (savedSettings) {
+        Object.assign(settings, JSON.parse(savedSettings));
+        
+        // Применяем загруженные настройки
+        document.getElementById('toggle-animation').checked = settings.animation;
+        document.getElementById('toggle-contrast').checked = settings.contrast;
+        document.getElementById('toggle-grayscale').checked = settings.grayscale;
+        
+        applySettings();
+      }
+    }
+
+    document.getElementById('toggle-theme').addEventListener('click', () => {
+      const lightTheme = document.getElementById('light-theme');
+      const mainStyle = document.getElementById('main-style');
+      
+      if (lightTheme.disabled) {
+        lightTheme.disabled = false;
+        mainStyle.disabled = true;
+        settings.theme = 'light';
+      } else {
+        lightTheme.disabled = true;
+        mainStyle.disabled = false;
+        settings.theme = 'dark';
+      }
+      
+      applySettings();
+    });
+
+    document.getElementById('toggle-animation').addEventListener('change', e => {
+      settings.animation = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('toggle-contrast').addEventListener('change', e => {
+      settings.contrast = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('toggle-grayscale').addEventListener('change', e => {
+      settings.grayscale = e.target.checked;
+      applySettings();
+    });
+
+    document.getElementById('increase-font').addEventListener('click', () => {
+      settings.fontSize = Math.min(1.5, settings.fontSize + 0.1);
+      applySettings();
+    });
+
+    document.getElementById('decrease-font').addEventListener('click', () => {
+      settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
+      applySettings();
+    });
+
+    // Инициализация при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+    });
+  </script>
+</body>
+</html>

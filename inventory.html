@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инвентаризация - OPAC-Global</title>
+    <link rel="stylesheet" href="styles.css" id="main-style">
+    <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+	  <link rel="stylesheet" href="high-contrast.css">
+  <link rel="stylesheet" href="grayscale.css">
+    <style>
+        .scan-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .scan-mode-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-buttons-container {
+            display: flex;
+            gap: 12px;
+        }
+		
+		 /* Добавляем курсор-указатель для карточек */
+        .number-card {
+            cursor: pointer;
+        }
+        
+        /* Стиль при наведении на карточку */
+        .number-card:hover {
+            background: var(--menu-item-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar" id="sidebar">
+            <ul class="menu">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="marking.html">Маркировка</a></li>
+                <li><a href="inventory.html">Инвентаризация</a></li>
+                <li><a href="personnel.html">Персоналии</a></li>
+				<li><a href="setting.html">Настройки</a></li>
+				<li> <a href="login.html">Выход</a></li>
+            </ul>
+        </nav>
+		
+        <button class="menu-button" onclick="toggleMenu()">☰</button>
+            
+        <main class="content">
+            <div class="header">
+                <h1>Инвентаризация фонда</h1>
+                <p>Сканируйте или вводите вручную штрих-коды документов</p>
+            </div>
+            
+            <div class="inventory-container">
+                <!-- Информационный блок -->
+                <div class="inventory-info">
+                    <p>Всего отсканировано: <span id="total-scanned">0</span> документов</p>
+                </div>
+                
+                <!-- Контейнер с элементами управления -->
+                <div class="scan-controls">
+                    <!-- Переключатель режима сканирования -->
+                    <div class="scan-mode-container">
+                        <span class="scan-mode-label">Режим сканирования:</span>
+                        <label class="scan-mode-switch">
+                            <input type="checkbox" id="auto-scan-toggle">
+                            <span class="scan-mode-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- Кнопки действий -->
+                    <div class="action-buttons-container">
+                        <button id="clear-button" class="clear-button">Очистить</button>
+                        <button id="export-button" class="print-button">Экспорт</button>
+                    </div>
+                </div>
+                
+                <!-- Сетка с отсканированными номерами -->
+                <div class="numbers-grid" id="numbers-grid">
+                    <!-- Здесь будут появляться отсканированные номера -->
+                </div>
+                
+                <!-- Панель ввода -->
+                <div class="input-footer">
+                    <input type="text" 
+                           id="number-input" 
+                           class="number-input" 
+                           placeholder="Введите номер вручную или сканируйте"
+                           autofocus>
+                    <button id="add-button" class="add-button">Добавить</button>
+                    <span class="counter"><span id="items-count">0</span> шт.</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Модальное окно экспорта -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Экспорт данных</h3>
+            <div class="modal-message">
+                <p>Выберите формат для экспорта отсканированных штрих-кодов:</p>
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="export-format" value="csv" checked> CSV (Excel)
+                    </label>
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="export-format" value="txt"> Текстовый файл
+                    </label>
+                    <label style="display: block;">
+                        <input type="radio" name="export-format" value="json"> JSON
+                    </label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-button secondary" onclick="closeExportModal()">Отмена</button>
+                <button class="modal-button primary" onclick="exportData()">Экспорт</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно дубликата -->
+   <div class="modal-overlay" id="duplicate-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Дубликат штрих-кода</h3>
+            <div class="modal-message">
+                <p>Штрих-код <strong id="duplicate-number"></strong> уже был отсканирован ранее.</p>
+                <p>Хотите проверить этот штрих-код в системе?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-button secondary" onclick="closeDuplicateModal()">Отмена</button>
+                <button class="modal-button primary" onclick="checkBarcode()">Проверить</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="theme-switcher.js"></script>
+    
+    <script>
+        // Переменные
+        const scannedNumbers = new Set();
+        const numbersGrid = document.getElementById('numbers-grid');
+        const numberInput = document.getElementById('number-input');
+        const addButton = document.getElementById('add-button');
+        const clearButton = document.getElementById('clear-button');
+        const exportButton = document.getElementById('export-button');
+        const itemsCount = document.getElementById('items-count');
+        const totalScanned = document.getElementById('total-scanned');
+        const autoScanToggle = document.getElementById('auto-scan-toggle');
+        const exportModal = document.getElementById('export-modal');
+        const duplicateModal = document.getElementById('duplicate-modal');
+        const duplicateNumberEl = document.getElementById('duplicate-number');
+        
+        // Текущий дублирующийся номер (для модального окна)
+        let duplicateNumber = '';
+        
+        // Переключение меню
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+        
+        // Добавление номера
+        function addNumber() {
+            const number = numberInput.value.trim();
+            
+            if (!number) return;
+            
+            if (!scannedNumbers.has(number)) {
+                scannedNumbers.add(number);
+                renderNumberCard(number);
+                updateCounters();
+                numberInput.value = '';
+                
+                // Автофокус на поле ввода
+                if (autoScanToggle.checked) {
+                    numberInput.focus();
+                }
+            } else {
+                // Показываем модальное окно для дубликата
+                duplicateNumber = number;
+                duplicateNumberEl.textContent = number;
+                openDuplicateModal();
+            }
+        }
+        
+        // Принудительное добавление дубликата
+        function forceAddDuplicate() {
+            if (duplicateNumber) {
+                scannedNumbers.add(duplicateNumber);
+                renderNumberCard(duplicateNumber);
+                updateCounters();
+                numberInput.value = '';
+                closeDuplicateModal();
+                
+                if (autoScanToggle.checked) {
+                    numberInput.focus();
+                }
+            }
+        }
+        
+        // Отрисовка карточки номера
+     // Отрисовка карточки номера
+        function renderNumberCard(number) {
+            const card = document.createElement('div');
+            card.className = 'number-card';
+            card.innerHTML = `
+                <div>${number}</div>
+                <button class="remove-number" onclick="removeNumber('${number}', event)">×</button>
+            `;
+            
+            // Добавляем обработчик клика на карточку
+            card.addEventListener('click', function(e) {
+                // Проверяем, что клик был не по кнопке удаления
+                if (!e.target.classList.contains('remove-number')) {
+                    checkBarcodeInSystem(number);
+                }
+            });
+            
+            numbersGrid.appendChild(card);
+        }
+
+        // Функция проверки штрих-кода в системе (при клике на карточку)
+        function checkBarcodeInSystem(barcode) {
+            const encodedBarcode = encodeURIComponent(barcode);
+            const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D1%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
+            window.open(checkUrl, '_blank');
+        }
+
+        // Обновленная функция удаления номера (чтобы предотвратить всплытие события)
+        function removeNumber(number, event) {
+            event.stopPropagation(); // Останавливаем всплытие события
+            scannedNumbers.delete(number);
+            updateCounters();
+            
+            // Перерисовываем все карточки
+            numbersGrid.innerHTML = '';
+            scannedNumbers.forEach(num => renderNumberCard(num));
+        }
+        
+        // Очистка всех номеров
+        function clearAll() {
+            if (scannedNumbers.size > 0 && confirm('Вы уверены, что хотите очистить список?')) {
+                scannedNumbers.clear();
+                numbersGrid.innerHTML = '';
+                updateCounters();
+                numberInput.focus();
+            }
+        }
+        
+        // Обновление счетчиков
+        function updateCounters() {
+            itemsCount.textContent = scannedNumbers.size;
+            totalScanned.textContent = scannedNumbers.size;
+        }
+        
+        // Открытие модального окна экспорта
+        function openExportModal() {
+            if (scannedNumbers.size === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+            exportModal.classList.add('active');
+        }
+        
+        // Закрытие модального окна экспорта
+        function closeExportModal() {
+            exportModal.classList.remove('active');
+        }
+        
+        // Открытие модального окна дубликата
+        function openDuplicateModal() {
+            duplicateModal.classList.add('active');
+        }
+        
+        // Закрытие модального окна дубликата
+        function closeDuplicateModal() {
+            duplicateModal.classList.remove('active');
+            numberInput.value = '';
+            numberInput.focus();
+        }
+        
+        // Экспорт данных
+        function exportData() {
+            const format = document.querySelector('input[name="export-format"]:checked').value;
+            let content = '';
+            let mimeType = '';
+            let fileName = 'inventory_export_' + new Date().toISOString().slice(0, 10);
+            
+            switch(format) {
+                case 'csv':
+                    content = 'Штрих-код\n' + Array.from(scannedNumbers).join('\n');
+                    mimeType = 'text/csv';
+                    fileName += '.csv';
+                    break;
+                case 'txt':
+                    content = Array.from(scannedNumbers).join('\n');
+                    mimeType = 'text/plain';
+                    fileName += '.txt';
+                    break;
+                case 'json':
+                    content = JSON.stringify(Array.from(scannedNumbers), null, 2);
+                    mimeType = 'application/json';
+                    fileName += '.json';
+                    break;
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            closeExportModal();
+        }
+		
+		 // Функция проверки штрих-кода
+        function checkBarcode() {
+            if (duplicateNumber) {
+                // Формируем URL для проверки штрих-кода
+                const encodedBarcode = encodeURIComponent(duplicateNumber);
+                const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D1%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
+                
+				
+				
+                // Открываем URL в новой вкладке
+                window.open(checkUrl, '_blank');
+                
+                // Закрываем модальное окно
+                closeDuplicateModal();
+                
+                // Очищаем поле ввода и возвращаем фокус
+                numberInput.value = '';
+                numberInput.focus();
+            }
+        }
+        
+        // Обработчики событий
+        addButton.addEventListener('click', addNumber);
+        clearButton.addEventListener('click', clearAll);
+        exportButton.addEventListener('click', openExportModal);
+        
+        numberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addNumber();
+            }
+        });
+        
+        // Автоматическое добавление при сканировании (если сканер добавляет Enter)
+        numberInput.addEventListener('input', (e) => {
+            if (autoScanToggle.checked && numberInput.value.includes('\n')) {
+                const number = numberInput.value.replace('\n', '').trim();
+                if (number) {
+                    numberInput.value = number;
+                    addNumber();
+                }
+            }
+        });
+        
+        // Фокус на поле ввода при загрузке
+        window.addEventListener('load', () => {
+            numberInput.focus();
+        });
+    </script>
+</body>
+</html>
