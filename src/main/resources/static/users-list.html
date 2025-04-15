@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр пользователей - OPAC-Global</title>
+    <link rel="stylesheet" href="styles.css" id="main-style">
+    <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+    <link rel="stylesheet" href="high-contrast.css">
+    <link rel="stylesheet" href="grayscale.css">
+</head>
+<body>
+<div class="container">
+    <nav class="sidebar" id="sidebar">
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="marking.html">Маркировка</a></li>
+            <li><a href="inventory.html">Инвентаризация</a></li>
+            <li><a href="personnel.html">Персоналии</a></li>
+            <li><a href="setting.html">Настройки</a></li>
+            <li><a href="login.html">Выход</a></li>
+            <li>
+                <button id="theme-toggle" class="theme-toggle">
+                    <span class="theme-icon">🌓</span> Сменить тему
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <main class="content">
+        <div class="header">
+            <h1>Просмотр всех пользователей</h1>
+            <p>Список зарегистрированных пользователей системы</p>
+        </div>
+
+         <div class="users-table-container">
+             <!--          <div class="bulk-actions">
+                      <button id="select-all" class="select-all-button">Выбрать все</button>
+                      <button id="delete-selected" class="delete-selected-button" disabled>
+                          Удалить выбранные (<span id="selected-count">0</span>)
+                      </button>
+                      <button id="delete-all" class="delete-all-button">Удалить всех</button>
+                  </div> -->
+
+                  <table class="users-table">
+                      <thead>
+                      <tr>
+                          <th width="40px"></th>
+                          <th>№</th>
+                          <th>ID</th>
+                          <th>Наименование</th>
+                          <th>Логин</th>
+                          <th>Пароль</th>
+                          <th>Действия</th>
+                      </tr>
+                      </thead>
+                      <tbody id="users-table-body">
+                      <!-- Данные будут загружаться динамически -->
+                </tbody>
+            </table>
+
+            <div class="table-actions">
+           <!--     <button class="add-user-button">Добавить пользователя</button> -->
+                <button onclick="window.location.href='registration.html'">Добавить пользователя</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Модальное окно подтверждения -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-content">
+        <h3 class="modal-title" id="modal-title">Подтверждение удаления</h3>
+        <p class="modal-message" id="modal-message"></p>
+        <div class="modal-actions">
+            <button class="modal-button secondary" id="cancel-delete">Отмена</button>
+            <button class="modal-button primary" id="confirm-delete">Удалить</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="theme-switcher.js"></script>
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Основная функция инициализации
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Проверка прав администратора (раскомментируйте при необходимости)
+            /*
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'admin') {
+                alert('Доступ запрещен! Недостаточно прав.');
+                window.location.href = 'index.html';
+                return;
+            }
+            */
+
+            // Загрузка пользователей при открытии страницы
+            await loadUsers();
+
+            // Инициализация функционала таблицы
+            initUserTable();
+
+            // Обработчик кнопки "Добавить пользователя"
+            document.querySelector('.add-user-button').addEventListener('click', function() {
+                window.location.href = 'registration.html';
+            });
+        });
+
+        // Загрузка пользователей с сервера
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/v1/institutions');
+
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки пользователей');
+                }
+
+                const users = await response.json();
+                renderUsers(users);
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось загрузить пользователей: ' + error.message);
+            }
+        }
+
+        // Отрисовка пользователей в таблице
+        function renderUsers(users) {
+            const tbody = document.querySelector('.users-table tbody');
+            tbody.innerHTML = ''; // Очищаем таблицу
+
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="user-checkbox" data-id="${user.id}"></td>
+                    <td>${index + 1}</td>
+                    <td>${user.key}</td>
+                    <td class="editable" data-field="name">${user.name || ''}</td>
+
+                    <td class="editable" data-field="username">${user.login || ''}</td>
+                    <td>••••••••</td>
+                    <td>
+                        <button class="action-button edit">Редактировать</button>
+                        <button class="action-button delete">Удалить</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // После рендеринга добавляем обработчики для кнопок
+            addEditHandlers();
+            addDeleteHandlers();
+        }
+
+        // Инициализация функционала таблицы
+        function initUserTable() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const selectAllBtn = document.getElementById('select-all');
+            const deleteSelectedBtn = document.getElementById('delete-selected');
+            const deleteAllBtn = document.getElementById('delete-all');
+            const selectedCount = document.getElementById('selected-count');
+            const confirmModal = document.getElementById('confirm-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete');
+            const confirmDeleteBtn = document.getElementById('confirm-delete');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+
+            let currentAction = null;
+            let selectedUsers = [];
+
+            // Обработчик для чекбоксов
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedUsers.push(this.getAttribute('data-id'));
+                    } else {
+                        selectedUsers = selectedUsers.filter(id => id !== this.getAttribute('data-id'));
+                    }
+
+                    updateSelectedCount();
+                    selectAllBtn.textContent = selectedUsers.length === checkboxes.length ? 'Снять все' : 'Выбрать все';
+                });
+            });
+
+            // Кнопка "Выбрать все"
+            selectAllBtn.addEventListener('click', function() {
+                const allSelected = selectedUsers.length === checkboxes.length;
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = !allSelected;
+
+                    if (!allSelected && !selectedUsers.includes(checkbox.getAttribute('data-id'))) {
+                        selectedUsers.push(checkbox.getAttribute('data-id'));
+                    } else if (allSelected) {
+                        selectedUsers = selectedUsers.filter(id => id !== checkbox.getAttribute('data-id'));
+                    }
+                });
+
+                updateSelectedCount();
+                this.textContent = !allSelected ? 'Снять все' : 'Выбрать все';
+            });
+
+            // Кнопка "Удалить выбранные"
+            deleteSelectedBtn.addEventListener('click', function() {
+                if (selectedUsers.length === 0) return;
+
+                currentAction = 'delete-selected';
+                modalTitle.textContent = 'Подтверждение удаления';
+                modalMessage.textContent = `Вы уверены, что хотите удалить ${selectedUsers.length} пользователей?`;
+                confirmModal.classList.add('active');
+            });
+
+            // Кнопка "Удалить всех"
+            deleteAllBtn.addEventListener('click', function() {
+                currentAction = 'delete-all';
+                modalTitle.textContent = 'Подтверждение удаления';
+                modalMessage.textContent = 'Вы уверены, что хотите удалить всех пользователей?';
+                confirmModal.classList.add('active');
+            });
+
+            // Кнопка отмены в модальном окне
+            cancelDeleteBtn.addEventListener('click', function() {
+                confirmModal.classList.remove('active');
+            });
+
+            // Кнопка подтверждения в модальном окне
+            confirmDeleteBtn.addEventListener('click', async function() {
+                confirmModal.classList.remove('active');
+
+                try {
+                    if (currentAction === 'delete-selected') {
+                        // Удаление выбранных пользователей
+                        for (const id of selectedUsers) {
+                            await deleteUser(id);
+                        }
+
+                        // Перезагружаем список пользователей
+                        await loadUsers();
+
+                    } else if (currentAction === 'delete-all') {
+                        // Получаем всех пользователей
+                        const response = await fetch('/api/v1/institutions');
+                        const allUsers = await response.json();
+
+                        // Удаляем всех пользователей (кроме первого, если это администратор)
+                        for (const user of allUsers) {
+                            if (user.id !== '1001') { // Не удаляем администратора
+                                await deleteUser(user.id);
+                            }
+                        }
+
+                        // Перезагружаем список пользователей
+                        await loadUsers();
+                    }
+
+                    // Сброс выбора
+                    selectedUsers = [];
+                    updateSelectedCount();
+                    selectAllBtn.textContent = 'Выбрать все';
+
+                } catch (error) {
+                    console.error('Ошибка удаления:', error);
+                    alert('Произошла ошибка при удалении: ' + error.message);
+                }
+            });
+
+            // Обновление счетчика выбранных пользователей
+            function updateSelectedCount() {
+                selectedCount.textContent = selectedUsers.length;
+                deleteSelectedBtn.disabled = selectedUsers.length === 0;
+            }
+        }
+
+        // Добавление обработчиков для кнопок редактирования
+        function addEditHandlers() {
+            document.querySelectorAll('.action-button.edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const userId = row.querySelector('.user-checkbox').getAttribute('data-id');
+                    const isEditing = row.classList.contains('editing');
+
+                    if (isEditing) {
+                        // Завершение редактирования - сохраняем изменения
+                        saveUserChanges(row, userId);
+                        this.textContent = 'Редактировать';
+                        row.classList.remove('editing');
+                    } else {
+                        // Начало редактирования
+                        enableEditing(row);
+                        this.textContent = 'Сохранить';
+                        row.classList.add('editing');
+                    }
+                });
+            });
+        }
+
+        // Включение режима редактирования для строки
+        function enableEditing(row) {
+            const editableCells = row.querySelectorAll('.editable');
+
+            editableCells.forEach(cell => {
+                const field = cell.getAttribute('data-field');
+                const value = cell.textContent;
+
+                cell.innerHTML = `<input type="text" value="${value}" data-field="${field}">`;
+            });
+        }
+
+        // Сохранение изменений пользователя
+        async function saveUserChanges(row, userId) {
+            const inputs = row.querySelectorAll('input[data-field]');
+            const userData = { id: userId };
+
+            inputs.forEach(input => {
+                const field = input.getAttribute('data-field');
+                userData[field] = input.value;
+
+                // Возвращаем ячейку в обычное состояние
+                const cell = input.closest('td');
+                cell.textContent = input.value;
+                cell.setAttribute('data-field', field);
+            });
+
+            try {
+                const response = await fetch('/api/v1/institutions/update_institution', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка сохранения изменений');
+                }
+
+                const updatedUser = await response.json();
+                console.log('Пользователь обновлен:', updatedUser);
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось сохранить изменения: ' + error.message);
+                // Перезагружаем данные, чтобы отобразить актуальные
+                await loadUsers();
+            }
+        }
+
+        // Добавление обработчиков для кнопок удаления
+        function addDeleteHandlers() {
+            document.querySelectorAll('.action-button.delete').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const userId = this.closest('tr').querySelector('.user-checkbox').getAttribute('data-id');
+
+                    if (userId === '1001') {
+                        alert('Нельзя удалить администратора системы');
+                        return;
+                    }
+
+                    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                        try {
+                            await deleteUser(userId);
+                            await loadUsers(); // Перезагружаем список после удаления
+                        } catch (error) {
+                            console.error('Ошибка удаления:', error);
+                            alert('Не удалось удалить пользователя: ' + error.message);
+                        }
+                    }
+                });
+            });
+        }
+
+       // Функция удаления пользователя
+    async function deleteUser(userKey) {
+        const response = await fetch(`/api/v1/institutions/delete_institution/${userKey}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Ошибка удаления пользователя');
+        }
+    }
+
+    // В обработчике модального окна подтверждения (заменяем старую версию)
+   confirmDeleteBtn.addEventListener('click', async function() {
+        confirmModal.classList.remove('active');
+
+        try {
+            if (currentAction === 'delete-selected') {
+                // Получаем ключи выбранных пользователей
+                const selectedKeys = [];
+                document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    const keyCell = row.querySelector('td:nth-child(3)'); // Ячейка с ключом
+                    selectedKeys.push(keyCell.textContent);
+                });
+
+                // Удаление выбранных пользователей
+                for (const key of selectedKeys) {
+                    await deleteUser(key);
+                }
+
+                // Перезагружаем список пользователей
+                await loadUsers();
+
+            } else if (currentAction === 'delete-all') {
+                // Удаление всех пользователей через отдельный endpoint
+                const response = await fetch('/api/v1/institutions/delete_all_institution', {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при массовом удалении');
+                }
+
+                // Перезагружаем список пользователей
+                await loadUsers();
+            }
+
+            // Сброс выбора
+            selectedUsers = [];
+            updateSelectedCount();
+            selectAllBtn.textContent = 'Выбрать все';
+
+        } catch (error) {
+            console.error('Ошибка удаления:', error);
+            alert(`Ошибка при удалении: ${error.message}`);
+        }
+    });
+
+    // В обработчике кнопки удаления (заменяем старую версию)
+    function addDeleteHandlers() {
+        document.querySelectorAll('.action-button.delete').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const row = this.closest('tr');
+                const keyCell = row.querySelector('td:nth-child(3)'); // Ячейка с ключом
+                const userKey = keyCell.textContent;
+
+                if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                    try {
+                        await deleteUser(userKey);
+                        await loadUsers(); // Перезагружаем список после удаления
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert(`Не удалось удалить пользователя: ${error.message}`);
+                    }
+                }
+            });
+        });
+    }
+    </script>
+</body>
+</html>

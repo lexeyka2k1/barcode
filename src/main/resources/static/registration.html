@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация пользователя - OPAC-Global</title>
+    <link rel="stylesheet" href="styles.css" id="main-style">
+    <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+    <link rel="stylesheet" href="high-contrast.css">
+    <link rel="stylesheet" href="grayscale.css">
+</head>
+<body>
+<div class="container">
+    <nav class="sidebar" id="sidebar">
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="marking.html">Маркировка</a></li>
+            <li><a href="inventory.html">Инвентаризация</a></li>
+            <li><a href="personnel.html">Персоналии</a></li>
+            <li><a href="setting.html">Настройки</a></li>
+            <li><a href="login.html">Выход</a></li>
+            <li>
+                <button id="theme-toggle" class="theme-toggle">
+                    <span class="theme-icon">🌓</span> Сменить тему
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <main class="content">
+        <div class="header">
+            <h1>Регистрация нового пользователя</h1>
+            <p>Заполните форму для создания учетной записи</p>
+        </div>
+
+        <div class="registration-form">
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="username">Наименование пользователя:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="key">Уникальный идентификатор:</label>
+                    <input type="text" id="key" name="user-id" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="login">Логин:</label>
+                    <input type="text" id="login" name="login" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary">Зарегистрировать</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script src="theme-switcher.js"></script>
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('username').value;
+        const key = document.getElementById('key').value;
+        const login = document.getElementById('login').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const institution = {
+                key: key,
+                name: name,
+                login: login,
+                password: password
+            };
+
+            const response = await fetch('/api/v1/institutions/save_institution', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(institution)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+
+                // Обработка различных статусов ошибок
+                let errorMessage = 'Произошла ошибка при регистрации';
+
+                if (response.status === 400) {
+                    errorMessage = 'Неверно заполнены данные. Проверьте все поля.';
+                } else if (response.status === 409) {
+                    errorMessage = 'Пользователь с таким логином или идентификатором уже существует';
+                } else if (response.status === 500) {
+                    errorMessage = 'Ошибка на сервере. Пожалуйста, попробуйте позже.';
+                }
+
+                // Если сервер вернул конкретное сообщение об ошибке
+                if (errorData.message) {
+                    errorMessage += `\nДетали: ${errorData.message}`;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+            alert('Регистрация прошла успешно! Теперь вы можете войти в систему.');
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Ошибка при регистрации:', error);
+
+            // Показываем пользователю понятное сообщение
+            alert(error.message || 'Произошла неизвестная ошибка при регистрации. Пожалуйста, попробуйте еще раз.');
+        }
+    });
+</script>
+</body>
+</html>
