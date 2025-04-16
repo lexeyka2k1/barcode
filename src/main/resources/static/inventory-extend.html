@@ -83,22 +83,35 @@
     </main>
 </div>
 
+
 <!-- Модальное окно экспорта -->
 <div class="modal-overlay" id="export-modal">
     <div class="modal-content">
         <h3 class="modal-title">Экспорт данных</h3>
         <div class="modal-message">
-            <p>Выберите формат для экспорта отсканированных штрих-кодов:</p>
+            <p>Выберите формат и содержание для экспорта:</p>
             <div style="margin-top: 15px;">
-                <label style="display: block; margin-bottom: 10px;">
-                    <input type="radio" name="export-format" value="csv" checked> CSV (Excel)
-                </label>
-                <label style="display: block; margin-bottom: 10px;">
-                    <input type="radio" name="export-format" value="txt"> Текстовый файл
-                </label>
-                <label style="display: block;">
-                    <input type="radio" name="export-format" value="json"> JSON
-                </label>
+                <div style="margin-bottom: 15px;">
+                    <strong>Формат экспорта:</strong>
+                    <label style="display: block; margin-top: 5px; margin-bottom: 10px;">
+                        <input type="radio" name="export-format" value="csv" checked> CSV (Excel)
+                    </label>
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="export-format" value="txt"> Текстовый файл
+                    </label>
+                    <label style="display: block;">
+                        <input type="radio" name="export-format" value="json"> JSON
+                    </label>
+                </div>
+                <div>
+                    <strong>Содержание экспорта:</strong>
+                    <label style="display: block; margin-top: 5px; margin-bottom: 10px;">
+                        <input type="radio" name="export-content" value="full" checked> Полные данные (номер + название)
+                    </label>
+                    <label style="display: block;">
+                        <input type="radio" name="export-content" value="numbers"> Только инвентарные номера
+                    </label>
+                </div>
             </div>
         </div>
         <div class="modal-actions">
@@ -307,48 +320,71 @@
 
     // Экспорт данных
     function exportData() {
-        const format = document.querySelector('input[name="export-format"]:checked').value;
-        let content = '';
-        let mimeType = '';
-        let fileName = 'inventory_export_' + new Date().toISOString().slice(0, 10);
+    const format = document.querySelector('input[name="export-format"]:checked').value;
+    const contentType = document.querySelector('input[name="export-content"]:checked').value;
+    let content = '';
+    let mimeType = '';
+    let fileName = 'inventory_export_' + new Date().toISOString().slice(0, 10);
 
-        switch(format) {
-            case 'csv':
+    // Добавляем BOM для UTF-8
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+
+    switch(format) {
+        case 'csv':
+            if (contentType === 'full') {
                 content = 'Штрих-код;Название документа\n';
                 scannedItems.forEach((title, number) => {
                     content += `${number};"${title}"\n`;
                 });
-                mimeType = 'text/csv';
-                fileName += '.csv';
-                break;
-            case 'txt':
+            } else {
+                content = 'Штрих-код\n';
+                scannedItems.forEach((_, number) => {
+                    content += `${number}\n`;
+                });
+            }
+            mimeType = 'text/csv;charset=UTF-8';
+            fileName += '.csv';
+            break;
+        case 'txt':
+            if (contentType === 'full') {
                 scannedItems.forEach((title, number) => {
                     content += `${number} - ${title}\n`;
                 });
-                mimeType = 'text/plain';
-                fileName += '.txt';
-                break;
-            case 'json':
+            } else {
+                scannedItems.forEach((_, number) => {
+                    content += `${number}\n`;
+                });
+            }
+            mimeType = 'text/plain;charset=UTF-8';
+            fileName += '.txt';
+            break;
+        case 'json':
+            if (contentType === 'full') {
                 const itemsArray = Array.from(scannedItems).map(([number, title]) => ({ number, title }));
                 content = JSON.stringify(itemsArray, null, 2);
-                mimeType = 'application/json';
-                fileName += '.json';
-                break;
-        }
-
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        closeExportModal();
+            } else {
+                const numbersArray = Array.from(scannedItems.keys());
+                content = JSON.stringify(numbersArray, null, 2);
+            }
+            mimeType = 'application/json;charset=UTF-8';
+            fileName += '.json';
+            break;
     }
+
+    // Создаем Blob с BOM для UTF-8
+    const blob = new Blob([bom, content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    closeExportModal();
+}
 
     // Функция проверки штрих-кода
     function checkBarcode() {
