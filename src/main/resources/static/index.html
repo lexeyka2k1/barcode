@@ -18,12 +18,8 @@
                 <li><a href="inventory.html">Инвентаризация</a></li>
                 <li><a href="personnel.html">Персоналии</a></li>
 				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
+                <li><a href="#" onclick="logout()">Выход</a></li>
+
             </ul>
         </nav>
         
@@ -43,7 +39,7 @@
                         <li><strong>Авторизуйтесь</strong> в системе используя свои учетные данные</li>
                         <li><strong>Выберите раздел</strong> в боковом меню в соответствии с вашими задачами</li>
                         <li><strong>Начните работу</strong> с создания штрих-кодов или проведения инвентаризации</li>
-                        <li><strong>Используйте справочники</strong> для управления базой данных оборудования</li>
+                        <li><strong>Ознакомьтесь с документацией</strong> при необходимости</li>
                     </ol>
                     
                     <div class="quick-actions">
@@ -110,6 +106,15 @@
 
     <script src="theme-switcher.js"></script>
     <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
+    }
+    });
+
         function toggleMenu() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
@@ -199,6 +204,16 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
     });
+
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
+
     </script>
 </body>
 </html>

@@ -16,15 +16,15 @@
             <ul class="menu">
                 <li><a href="index.html">Главная</a></li>
                 <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
+                <li><a href="inventory-short.html">Инвентаризация</a></li>
                 <li><a href="personnel.html">Персоналии</a></li>
 				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
+              <li><a href="#" onclick="logout()">Выход</a></li>
+			<!--	<li>
                     <button id="theme-toggle" class="theme-toggle">
                         <span class="theme-icon">🌓</span> Сменить тему
                     </button>
-                </li>
+                </li> -->
             </ul>
         </nav>
     
@@ -43,7 +43,7 @@
             <div class="setting-item">
               <span class="setting-label">Цветовая тема</span>
               <div class="setting-control">
-                <button id="toggle-theme" class="setting-button primary">Сменить тему</button>
+                <button id="theme-toggle" class="setting-button primary">Сменить тему</button>
               </div>
             </div>
           </div>
@@ -102,6 +102,13 @@
 
   <script src="theme-switcher.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
+    }
+});
     const settings = {
         theme: 'light',
         animation: true,
@@ -181,6 +188,15 @@
         settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
         applySettings();
     });
+
+       function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
 </script>
 </body>
 </html>

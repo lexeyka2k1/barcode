@@ -18,12 +18,7 @@
                 <li><a href="inventory.html">Инвентаризация</a></li>
                 <li><a href="personnel.html">Персоналии</a></li>
 				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
+                <li><a href="#" onclick="logout()">Выход</a></li>
             </ul>
         </nav>
     
@@ -54,6 +49,14 @@
 	<script src="theme-switcher.js"></script>
  
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
+    }
+      });
+
         function toggleMenu() {
             document.getElementById("menu").classList.toggle("open");
         }
@@ -62,6 +65,15 @@
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('collapsed');
 }
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
+
     </script>
 </body>
 </html>

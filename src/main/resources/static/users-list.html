@@ -19,11 +19,7 @@
             <li><a href="personnel.html">Персоналии</a></li>
             <li><a href="setting.html">Настройки</a></li>
             <li><a href="login.html">Выход</a></li>
-            <li>
-                <button id="theme-toggle" class="theme-toggle">
-                    <span class="theme-icon">🌓</span> Сменить тему
-                </button>
-            </li>
+
         </ul>
     </nav>
 
@@ -454,6 +450,15 @@
             });
         });
     }
+
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
     </script>
 </body>
 </html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расширенная инвентаризация - OPAC-Global</title>
+    <link rel="stylesheet" href="styles.css" id="main-style">
+    <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
+    <link rel="stylesheet" href="high-contrast.css">
+    <link rel="stylesheet" href="grayscale.css">
+</head>
+<body>
+<div class="container">
+    <nav class="sidebar" id="sidebar">
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="marking.html">Маркировка</a></li>
+            <li><a href="inventory.html">Инвентаризация</a></li>
+            <li><a href="personnel.html">Персоналии</a></li>
+            <li><a href="setting.html">Настройки</a></li>
+            <li><a href="#" onclick="logout()">Выход</a></li>
+        </ul>
+    </nav>
+
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <main class="content">
+        <div class="header">
+            <h1>Расширенная инвентаризация фонда</h1>
+            <p>Сканируйте штрих-коды документов для получения полной информации</p>
+        </div>
+
+        <div class="inventory-container">
+            <!-- Информационный блок -->
+            <div class="inventory-info">
+                <p>Всего отсканировано: <span id="total-scanned">0</span> документов</p>
+            </div>
+
+            <!-- Контейнер с элементами управления -->
+            <div class="scan-controls">
+                <!-- Переключатель режима сканирования -->
+                <div class="scan-mode-container">
+                    <span class="scan-mode-label">Режим сканирования:</span>
+                    <label class="scan-mode-switch">
+                        <input type="checkbox" id="auto-scan-toggle">
+                        <span class="scan-mode-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="action-buttons-container">
+                    <button id="clear-button" class="clear-button">Очистить</button>
+                    <button id="export-button" class="print-button">Экспорт</button>
+                </div>
+            </div>
+
+            <!-- Таблица с отсканированными номерами и названиями -->
+            <div class="inventory-table-container">
+                <table class="inventory-table" id="inventory-table">
+                    <thead>
+                    <tr>
+                        <th>Инвентарный номер</th>
+                        <th>Название документа</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Здесь будут появляться строки с данными -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Панель ввода -->
+            <div class="input-footer">
+                <input type="text"
+                       id="number-input"
+                       class="number-input"
+                       placeholder="Введите номер вручную или сканируйте"
+                       autofocus>
+                <button id="add-button" class="add-button">Добавить</button>
+                <span class="counter"><span id="items-count">0</span> шт.</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Модальное окно экспорта -->
+<div class="modal-overlay" id="export-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">Экспорт данных</h3>
+        <div class="modal-message">
+            <p>Выберите формат для экспорта отсканированных штрих-кодов:</p>
+            <div style="margin-top: 15px;">
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="radio" name="export-format" value="csv" checked> CSV (Excel)
+                </label>
+                <label style="display: block; margin-bottom: 10px;">
+                    <input type="radio" name="export-format" value="txt"> Текстовый файл
+                </label>
+                <label style="display: block;">
+                    <input type="radio" name="export-format" value="json"> JSON
+                </label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-button secondary" onclick="closeExportModal()">Отмена</button>
+            <button class="modal-button primary" onclick="exportData()">Экспорт</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно дубликата -->
+<div class="modal-overlay" id="duplicate-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">Дубликат штрих-кода</h3>
+        <div class="modal-message">
+            <p>Штрих-код <strong id="duplicate-number"></strong> уже был отсканирован ранее.</p>
+            <p>Хотите проверить этот штрих-код в системе?</p>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-button secondary" onclick="closeDuplicateModal()">Отмена</button>
+            <button class="modal-button primary" onclick="checkBarcode()">Проверить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно загрузки -->
+<div class="modal-overlay" id="loading-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">Загрузка данных</h3>
+        <div class="modal-message">
+            <p>Идет получение информации о документе...</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+</div>
+
+<script src="theme-switcher.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const institutionKey = localStorage.getItem('institutionKey');
+        if (!institutionKey) {
+            window.location.href = 'login.html';
+            return;
+        }
+    });
+
+    // Переменные
+    const scannedItems = new Map(); // Хранит инвентарные номера и названия
+    const inventoryTable = document.getElementById('inventory-table').getElementsByTagName('tbody')[0];
+    const numberInput = document.getElementById('number-input');
+    const addButton = document.getElementById('add-button');
+    const clearButton = document.getElementById('clear-button');
+    const exportButton = document.getElementById('export-button');
+    const itemsCount = document.getElementById('items-count');
+    const totalScanned = document.getElementById('total-scanned');
+    const autoScanToggle = document.getElementById('auto-scan-toggle');
+    const exportModal = document.getElementById('export-modal');
+    const duplicateModal = document.getElementById('duplicate-modal');
+    const loadingModal = document.getElementById('loading-modal');
+    const duplicateNumberEl = document.getElementById('duplicate-number');
+
+    // Текущий дублирующийся номер (для модального окна)
+    let duplicateNumber = '';
+
+    // Переключение меню
+    function toggleMenu() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+
+    // Функция для получения названия документа из XML
+    async function fetchDocumentTitle(inventoryNumber) {
+        try {
+            const response = await fetch(`/api/documents/info?inventoryNumber=${encodeURIComponent(inventoryNumber)}`);
+            if (!response.ok) {
+                throw new Error('Ошибка сервера');
+            }
+            const data = await response.json();
+            return data.title;
+        } catch (error) {
+            console.error('Ошибка при получении данных:', error);
+            return "Ошибка загрузки названия";
+        }
+    }
+
+    // Добавление номера с получением названия
+    async function addNumber() {
+        const number = numberInput.value.trim();
+
+        if (!number) return;
+
+        if (!scannedItems.has(number)) {
+            // Показываем окно загрузки
+            loadingModal.classList.add('active');
+
+            try {
+                const title = await fetchDocumentTitle(number);
+                scannedItems.set(number, title);
+                renderItemRow(number, title);
+                updateCounters();
+                numberInput.value = '';
+
+                // Автофокус на поле ввода
+                if (autoScanToggle.checked) {
+                    numberInput.focus();
+                }
+            } finally {
+                loadingModal.classList.remove('active');
+            }
+        } else {
+            // Показываем модальное окно для дубликата
+            duplicateNumber = number;
+            duplicateNumberEl.textContent = number;
+            openDuplicateModal();
+        }
+    }
+
+    // Отрисовка строки с номером и названием
+    function renderItemRow(number, title) {
+        const row = document.createElement('tr');
+        row.className = 'inventory-row';
+        row.innerHTML = `
+            <td class="inventory-number">${number}</td>
+            <td class="document-title">${title}</td>
+        `;
+
+        // Добавляем обработчик клика на строку для проверки в системе
+        row.addEventListener('click', function() {
+            checkBarcodeInSystem(number);
+        });
+
+        // Добавляем обработчик двойного клика для удаления
+        row.addEventListener('dblclick', function() {
+            if (confirm(`Удалить документ ${number} из списка?`)) {
+                removeNumber(number);
+            }
+        });
+
+        inventoryTable.appendChild(row);
+    }
+
+    // Функция проверки штрих-кода в системе (при клике на строку)
+    function checkBarcodeInSystem(barcode) {
+        const encodedBarcode = encodeURIComponent(barcode);
+        const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D1%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
+        window.open(checkUrl, '_blank');
+    }
+
+    // Функция удаления номера
+    function removeNumber(number) {
+        scannedItems.delete(number);
+        updateCounters();
+
+        // Удаляем строку из таблицы
+        const rows = inventoryTable.getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const numCell = rows[i].querySelector('.inventory-number');
+            if (numCell && numCell.textContent === number) {
+                inventoryTable.removeChild(rows[i]);
+                break;
+            }
+        }
+    }
+
+    // Очистка всех номеров
+    function clearAll() {
+        if (scannedItems.size > 0 && confirm('Вы уверены, что хотите очистить список?')) {
+            scannedItems.clear();
+            inventoryTable.innerHTML = '';
+            updateCounters();
+            numberInput.focus();
+        }
+    }
+
+    // Обновление счетчиков
+    function updateCounters() {
+        itemsCount.textContent = scannedItems.size;
+        totalScanned.textContent = scannedItems.size;
+    }
+
+    // Открытие модального окна экспорта
+    function openExportModal() {
+        if (scannedItems.size === 0) {
+            alert('Нет данных для экспорта');
+            return;
+        }
+        exportModal.classList.add('active');
+    }
+
+    // Закрытие модального окна экспорта
+    function closeExportModal() {
+        exportModal.classList.remove('active');
+    }
+
+    // Открытие модального окна дубликата
+    function openDuplicateModal() {
+        duplicateModal.classList.add('active');
+    }
+
+    // Закрытие модального окна дубликата
+    function closeDuplicateModal() {
+        duplicateModal.classList.remove('active');
+        numberInput.value = '';
+        numberInput.focus();
+    }
+
+    // Экспорт данных
+    function exportData() {
+        const format = document.querySelector('input[name="export-format"]:checked').value;
+        let content = '';
+        let mimeType = '';
+        let fileName = 'inventory_export_' + new Date().toISOString().slice(0, 10);
+
+        switch(format) {
+            case 'csv':
+                content = 'Штрих-код;Название документа\n';
+                scannedItems.forEach((title, number) => {
+                    content += `${number};"${title}"\n`;
+                });
+                mimeType = 'text/csv';
+                fileName += '.csv';
+                break;
+            case 'txt':
+                scannedItems.forEach((title, number) => {
+                    content += `${number} - ${title}\n`;
+                });
+                mimeType = 'text/plain';
+                fileName += '.txt';
+                break;
+            case 'json':
+                const itemsArray = Array.from(scannedItems).map(([number, title]) => ({ number, title }));
+                content = JSON.stringify(itemsArray, null, 2);
+                mimeType = 'application/json';
+                fileName += '.json';
+                break;
+        }
+
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        closeExportModal();
+    }
+
+    // Функция проверки штрих-кода
+    function checkBarcode() {
+        if (duplicateNumber) {
+            const encodedBarcode = encodeURIComponent(duplicateNumber);
+            const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D1%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
+
+            window.open(checkUrl, '_blank');
+
+            closeDuplicateModal();
+            numberInput.value = '';
+            numberInput.focus();
+        }
+    }
+
+    // Обработчики событий
+    addButton.addEventListener('click', addNumber);
+    clearButton.addEventListener('click', clearAll);
+    exportButton.addEventListener('click', openExportModal);
+
+    numberInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addNumber();
+        }
+    });
+
+    // Автоматическое добавление при сканировании (если сканер добавляет Enter)
+    numberInput.addEventListener('input', (e) => {
+        if (autoScanToggle.checked && numberInput.value.includes('\n')) {
+            const number = numberInput.value.replace('\n', '').trim();
+            if (number) {
+                numberInput.value = number;
+                addNumber();
+            }
+        }
+    });
+
+    // Фокус на поле ввода при загрузке
+    window.addEventListener('load', () => {
+        numberInput.focus();
+    });
+
+    function logout() {
+        localStorage.removeItem('institutionKey');
+        localStorage.removeItem('institutionName');
+        window.location.href = 'login.html';
+    }
+</script>
+
+<style>
+    /* Стили для таблицы инвентаризации */
+    .inventory-table-container {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--card-bg);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 10px var(--shadow-color);
+    }
+
+    .inventory-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .inventory-table th {
+        background: var(--menu-item-bg);
+        color: var(--text-color);
+        padding: 12px 15px;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .inventory-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+        cursor: pointer;
+    }
+
+    .inventory-table tr:hover {
+        background: var(--menu-item-hover);
+    }
+
+    .inventory-number {
+        font-weight: bold;
+        color: var(--primary-color);
+        width: 25%;
+    }
+
+    .document-title {
+        width: 75%;
+        word-break: break-word;
+    }
+
+    /* Стили для индикатора загрузки */
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        margin: 20px auto;
+        border: 4px solid var(--menu-item-bg);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+</body>
+</html>
