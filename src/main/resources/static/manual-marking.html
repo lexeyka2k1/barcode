@@ -40,13 +40,13 @@
                 </div>
                 
                 <div id="warning" class="warning-message" style="display: none;">
-                    Внимание: Добавлено менее 28 номеров. На листе останутся пустые места.
+                    Внимание: Добавлено менее 40 номеров. На листе останутся пустые места.
                 </div>
                 
                 <div id="numbers-grid" class="numbers-grid"></div>
                 
                 <div class="input-footer">
-                    <input type="text" id="number-input" class="number-input" placeholder="Введите инвентарный номер">
+                    <input type="text" id="number-input" class="number-input" placeholder="Введите инвентарный номер" maxlength="7">
                     <button id="add-button" class="add-button">Добавить</button>
                     <div class="counter"><span id="count">0</span>/28</div>
                 </div>
@@ -115,6 +115,11 @@
         
         // Проверяем, что поле не пустое
         if (!number) return;
+
+        if (number.length > 7) {
+        alert('Инвентарный номер не должен превышать 7 символов');
+        return;
+        }
         
         // Проверяем на дубликат
         if (numbers.includes(number)) {

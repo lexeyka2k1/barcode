@@ -46,6 +46,11 @@ body {
   height: 100vh;
 }
 
+        #kod1 {
+          background-color: #3a3a3a;
+          border: 1px solid #45A049;
+      }
+
 /* Сайдбар */
 .sidebar {
   position: fixed;

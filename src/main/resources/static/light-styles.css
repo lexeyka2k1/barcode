@@ -78,6 +78,8 @@ input[type="text"], .number-input {
   background: var(--menu-item-bg);
 }
 
+
+
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -110,6 +112,13 @@ body {
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
+
+
+      #kod1 {
+          background-color: #ffffff;
+          border: 1px solid #45A049;
+      }
+
 
 .sidebar.collapsed {
   transform: translateX(-100%);
