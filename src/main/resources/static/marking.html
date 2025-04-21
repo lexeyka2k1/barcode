@@ -6,19 +6,14 @@
     <title>Маркировка - OPAC-Global</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
 	<link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-	  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+	  <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
     <div class="container">
         <nav class="sidebar" id="sidebar">
             <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-                <li><a href="#" onclick="logout()">Выход</a></li>
+                <!-- Меню будет заполнено через JavaScript -->
             </ul>
         </nav>
     
@@ -45,8 +40,9 @@
             
         </main>
     </div>
-	
-	<script src="theme-switcher.js"></script>
+
+    <script src="menu.js"></script>
+    <script src="setting.js"></script>
  
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -57,9 +53,6 @@
     }
       });
 
-        function toggleMenu() {
-            document.getElementById("menu").classList.toggle("open");
-        }
 		
 		function toggleMenu() {
     const sidebar = document.getElementById('sidebar');

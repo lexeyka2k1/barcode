@@ -6,6 +6,8 @@
     <title>Предпросмотр печати - OPAC-Global</title>
     <link rel="stylesheet" href="styles.css" id="main-style"/>
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled/>
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         /* Основные стили */
@@ -130,12 +132,7 @@
 <div class="container">
     <nav class="sidebar" id="sidebar">
         <ul class="menu">
-            <li><a href="index.html">Главная</a></li>
-            <li><a href="marking.html">Маркировка</a></li>
-            <li><a href="inventory.html">Инвентаризация</a></li>
-            <li><a href="personnel.html">Персоналии</a></li>
-            <li><a href="setting.html">Настройки</a></li>
-            <li><a href="#" onclick="logout()">Выход</a></li>
+            <!-- Меню будет заполнено через JavaScript -->
         </ul>
     </nav>
 
@@ -154,22 +151,25 @@
 
             <div class="print-actions">
                 <button onclick="printBarcodes()" class="print-action-button">Печать</button>
-                <button onclick="window.history.back()" class="print-action-button secondary">Назад</button>
+                <button class="primary" onclick="window.location.href='marking.html'">Назад</button>
             </div>
         </div>
     </main>
 </div>
 
-<script src="theme-switcher.js"></script>
+<script src="menu.js"></script>
+<script src="setting.js"></script>
 <script>
 
-    document.addEventListener('DOMContentLoaded', () => {
+ /*   document.addEventListener('DOMContentLoaded', () => {
           const theme = localStorage.getItem('theme');
           if (theme === 'light') {
               document.getElementById('light-theme').disabled = false;
               document.getElementById('main-style').disabled = true;
           }
-      });
+      }); */
+
+
 
 
   if (!localStorage.getItem('institutionKey')) {

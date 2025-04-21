@@ -9,4 +9,5 @@ import lombok.Data;
 public class AuthResponse {
     private String key;
     private String name;
+    private String role;
 }

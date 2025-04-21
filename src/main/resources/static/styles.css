@@ -12,8 +12,8 @@
   --border-color: #444444;
   --primary-color: #4CAF50;
   --primary-hover: #45a049;
-  --secondary-color: #555555;
-  --secondary-hover: #777777;
+  --secondary-color: #4CAF50;
+  --secondary-hover: #45a049;
   --warning-color: #FFC107;
   --error-color: #ff4444;
   --input-bg: #3a3a3a;
@@ -97,27 +97,24 @@ body {
 
 /* Меню */
 .menu {
-  margin-top: 20px;
-  list-style: none;
-  padding: 0;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
 .menu li {
-  margin-bottom: 10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e1e1;
 }
 
-.menu a {
-  color: var(--text-color);
-  text-decoration: none;
-  display: block;
-  padding: 10px 15px;
-  background: var(--menu-item-bg);
-  border-radius: 4px;
-  transition: all 0.2s ease;
+.menu li a {
+    color: #ffffff;
+    text-decoration: none;
+    display: block;
 }
 
-.menu a:hover {
-  background: var(--menu-item-hover);
+.menu li a:hover {
+    color: #4caf50;
 }
 
 .menu a.active {
@@ -1390,6 +1387,30 @@ input[type="password"]:focus {
     cursor: pointer;
 }
 
+.database-selector {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.database-selector label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.database-selector select {
+    width: 100%;
+    padding: 10px 15px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
 /* Адаптация для мобильных устройств */
 @media (max-width: 768px) {
    .action-buttons-container {
@@ -1409,8 +1430,28 @@ input[type="password"]:focus {
   }
   
   .sidebar {
-    width: 220px;
-  }
+          transform: translateX(-100%);
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          z-index: 1000;
+          background: white;
+          width: 250px;
+          transition: transform 0.3s ease;
+      }
+
+      .sidebar.active {
+          transform: translateX(0);
+      }
+
+      .menu-button {
+          display: block;
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          z-index: 1100;
+      }
   
   .content {
     margin-left: 220px;

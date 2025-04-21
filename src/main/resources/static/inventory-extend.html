@@ -6,20 +6,17 @@
     <title>Расширенная инвентаризация - OPAC-Global</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-    <link rel="stylesheet" href="high-contrast.css">
-    <link rel="stylesheet" href="grayscale.css">
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
 <div class="container">
     <nav class="sidebar" id="sidebar">
-        <ul class="menu">
-            <li><a href="index.html">Главная</a></li>
-            <li><a href="marking.html">Маркировка</a></li>
-            <li><a href="inventory.html">Инвентаризация</a></li>
-            <li><a href="personnel.html">Персоналии</a></li>
-            <li><a href="setting.html">Настройки</a></li>
-            <li><a href="#" onclick="logout()">Выход</a></li>
-        </ul>
+        <nav class="sidebar" id="sidebar">
+            <ul class="menu">
+                <!-- Меню будет заполнено через JavaScript -->
+            </ul>
+        </nav>
     </nav>
 
     <button class="menu-button" onclick="toggleMenu()">☰</button>
@@ -81,6 +78,14 @@
             </div>
         </div>
     </main>
+</div>
+
+
+<div class="database-selector" style="margin-bottom: 20px;">
+    <label for="database-select">База данных:</label>
+    <select id="database-select" class="number-input">
+        <!-- Опции будут заполнены динамически -->
+    </select>
 </div>
 
 
@@ -147,16 +152,62 @@
     </div>
 </div>
 
-<script src="theme-switcher.js"></script>
+<script src="menu.js"></script>
+<script src="setting.js"></script>
 
 <script>
+
+    let selectedDatabase = 1; // Значение по умолчанию
+
+// Функция для загрузки доступных баз данных
+async function loadAvailableDatabases() {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) return;
+
+    try {
+        const response = await fetch(`/api/v1/institutions/${institutionKey}`, {
+            headers: {
+                'Authorization': institutionKey
+            }
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            const select = document.getElementById('database-select');
+            select.innerHTML = '';
+
+            if (user.availableDatabases && user.availableDatabases.length > 0) {
+                user.availableDatabases.forEach(db => {
+                    const option = document.createElement('option');
+                    option.value = db;
+                    option.textContent = `База данных ${db}`;
+                    select.appendChild(option);
+                });
+
+                // Устанавливаем первую базу данных по умолчанию
+                selectedDatabase = user.availableDatabases[0];
+                select.value = selectedDatabase;
+
+                // Обработчик изменения выбора
+                select.addEventListener('change', () => {
+                    selectedDatabase = parseInt(select.value);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке баз данных:', error);
+    }
+}
+
     document.addEventListener('DOMContentLoaded', () => {
         const institutionKey = localStorage.getItem('institutionKey');
         if (!institutionKey) {
             window.location.href = 'login.html';
             return;
         }
+         loadAvailableDatabases();
     });
+
 
     // Переменные
     const scannedItems = new Map(); // Хранит инвентарные номера и названия
@@ -185,7 +236,13 @@
     // Функция для получения названия документа из XML
     async function fetchDocumentTitle(inventoryNumber) {
         try {
-            const response = await fetch(`/api/documents/info?inventoryNumber=${encodeURIComponent(inventoryNumber)}`);
+
+
+            const response = await fetch(`/api/documents/info?inventoryNumber=${encodeURIComponent(inventoryNumber)}&database=${selectedDatabase}`, {
+            headers: {
+                'Authorization': localStorage.getItem('institutionKey')
+            }
+        });
             if (!response.ok) {
                 throw new Error('Ошибка сервера');
             }
@@ -255,10 +312,10 @@
 
     // Функция проверки штрих-кода в системе (при клике на строку)
     function checkBarcodeInSystem(barcode) {
-        const encodedBarcode = encodeURIComponent(barcode);
-        const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D1%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
-        window.open(checkUrl, '_blank');
-    }
+    const encodedBarcode = encodeURIComponent(barcode);
+    const checkUrl = `https://opac.rounb.ru/cgiopac/opacg/opac.exe?arg0=libr&arg1=12345&_searchstr=%2Fopacg%2Ffreesearch2.html%3Fiddb%3D${selectedDatabase}%26value%3DIN+${encodedBarcode}%27%27&TypeAccess=PayAccess`;
+    window.open(checkUrl, '_blank');
+}
 
     // Функция удаления номера
     function removeNumber(number) {

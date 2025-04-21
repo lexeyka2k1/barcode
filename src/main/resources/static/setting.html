@@ -6,197 +6,190 @@
   <title>Настройки интерфейса - OPAC-Global</title>
   <link rel="stylesheet" href="styles.css" id="main-style">
   <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
-  
+  <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+  <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
+
 </head>
 <body>
-  <div class="container">
-    <nav class="sidebar" id="sidebar">
-            <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory-short.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-              <li><a href="#" onclick="logout()">Выход</a></li>
-			<!--	<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li> -->
-            </ul>
-        </nav>
-    
-    <button class="menu-button" onclick="toggleMenu()">☰</button>
-    
-    <main class="content">
-      <div class="header">
-        <h1>Настройки интерфейса</h1>
-        <p>Персонализация внешнего вида системы</p>
-      </div>
-      
-      <div id="settings-panel">
-        <div class="settings-section">
-          <h2>Внешний вид</h2>
-          <div class="settings-group">
-            <div class="setting-item">
-              <span class="setting-label">Цветовая тема</span>
-              <div class="setting-control">
-                <button id="theme-toggle" class="setting-button primary">Сменить тему</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="settings-section">
-          <h2>Доступность</h2>
-          <div class="settings-group">
-            <div class="setting-item">
-              <span class="setting-label">Анимация элементов</span>
-              <div class="setting-control">
-                <label class="checkbox-container">
-                  <input type="checkbox" id="toggle-animation" checked>
-                  <span class="checkbox-slider"></span>
-                </label>
-              </div>
-            </div>
-            
-            <div class="setting-item">
-              <span class="setting-label">Высококонтрастный режим</span>
-              <div class="setting-control">
-                <label class="checkbox-container">
-                  <input type="checkbox" id="toggle-contrast">
-                  <span class="checkbox-slider"></span>
-                </label>
-              </div>
-            </div>
-            
-            <div class="setting-item">
-              <span class="setting-label">Черно-белый режим</span>
-              <div class="setting-control">
-                <label class="checkbox-container">
-                  <input type="checkbox" id="toggle-grayscale">
-                  <span class="checkbox-slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="settings-section">
-          <h2>Размер текста</h2>
-          <div class="settings-group">
-            <div class="setting-item">
-              <span class="setting-label">Масштабирование</span>
-              <div class="setting-control">
-                <button id="decrease-font" class="setting-button">Уменьшить</button>
-                <button id="increase-font" class="setting-button">Увеличить</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+<div class="container">
+  <nav class="sidebar" id="sidebar">
+    <ul class="menu">
+      <!-- Меню будет заполнено через JavaScript -->
+    </ul>
+  </nav>
 
-  <script src="theme-switcher.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const institutionKey = localStorage.getItem('institutionKey');
-    if (!institutionKey) {
-        window.location.href = 'login.html';
-        return;
-    }
+  <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+  <main class="content">
+    <div class="header">
+      <h1>Настройки интерфейса</h1>
+      <p>Персонализация внешнего вида системы</p>
+    </div>
+
+    <div id="settings-panel">
+      <div class="settings-section">
+        <h2>Внешний вид</h2>
+        <div class="settings-group">
+          <div class="setting-item">
+            <span class="setting-label">Цветовая тема</span>
+            <div class="setting-control">
+              <button id="theme-toggle" class="setting-button primary">Сменить тему</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Доступность</h2>
+        <div class="settings-group">
+          <div class="setting-item">
+            <span class="setting-label">Анимация элементов</span>
+            <div class="setting-control">
+              <button id="toggle-animation" class="setting-button">Выключить</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <span class="setting-label">Высококонтрастный режим</span>
+            <div class="setting-control">
+              <button id="toggle-contrast" class="setting-button">Включить</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <span class="setting-label">Черно-белый режим</span>
+            <div class="setting-control">
+              <button id="toggle-grayscale" class="setting-button">Включить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Размер текста</h2>
+        <div class="settings-group">
+          <div class="setting-item">
+            <span class="setting-label">Масштабирование</span>
+            <div class="setting-control">
+              <button id="decrease-font" class="setting-button">Уменьшить</button>
+              <button id="increase-font" class="setting-button">Увеличить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="menu.js"></script>
+<script src="setting.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const institutionKey = localStorage.getItem('institutionKey');
+  if (!institutionKey) {
+      window.location.href = 'login.html';
+      return;
+  }
 });
-    const settings = {
-        theme: 'light',
-        animation: true,
-        contrast: false,
-        grayscale: false,
-        fontSize: 1
-    };
+  const settings = {
+      theme: 'light',
+      animation: true,
+      contrast: false,
+      grayscale: false,
+      fontSize: 1
+  };
 
-    function applySettings() {
-        document.body.classList.toggle('high-contrast', settings.contrast);
-        document.body.classList.toggle('grayscale', settings.grayscale);
-        document.documentElement.style.setProperty('--animation-duration', settings.animation ? '0.3s' : '0s');
-        document.body.style.fontSize = `${settings.fontSize}em`;
-        
-        // Сохраняем настройки в localStorage
-        localStorage.setItem('appSettings', JSON.stringify(settings));
-    }
-
-    function loadSettings() {
-        const savedSettings = localStorage.getItem('appSettings');
-        if (savedSettings) {
-            Object.assign(settings, JSON.parse(savedSettings));
-            
-            // Применяем загруженные настройки
-            document.getElementById('toggle-animation').checked = settings.animation;
-            document.getElementById('toggle-contrast').checked = settings.contrast;
-            document.getElementById('toggle-grayscale').checked = settings.grayscale;
-            
-            applySettings();
-        }
-    }
-
-    // Инициализация при загрузке
-    window.addEventListener('DOMContentLoaded', () => {
-        loadSettings();
-    });
-
-    // Остальные обработчики событий остаются без изменений
-    document.getElementById('toggle-theme').addEventListener('click', () => {
-        const lightTheme = document.getElementById('light-theme');
-        const mainStyle = document.getElementById('main-style');
-        
-        if (lightTheme.disabled) {
-            lightTheme.disabled = false;
-            mainStyle.disabled = true;
-            settings.theme = 'light';
-        } else {
-            lightTheme.disabled = true;
-            mainStyle.disabled = false;
-            settings.theme = 'dark';
-        }
-        
-        applySettings();
-    });
-
-    document.getElementById('toggle-animation').addEventListener('change', e => {
-        settings.animation = e.target.checked;
-        applySettings();
-    });
-
-    document.getElementById('toggle-contrast').addEventListener('change', e => {
-        settings.contrast = e.target.checked;
-        applySettings();
-    });
-
-    document.getElementById('toggle-grayscale').addEventListener('change', e => {
-        settings.grayscale = e.target.checked;
-        applySettings();
-    });
-
-    document.getElementById('increase-font').addEventListener('click', () => {
-        settings.fontSize = Math.min(1.5, settings.fontSize + 0.1);
-        applySettings();
-    });
-
-    document.getElementById('decrease-font').addEventListener('click', () => {
-        settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
-        applySettings();
-    });
-
-       function logout() {
-    // Очищаем все данные авторизации
-    localStorage.removeItem('institutionKey');
-    localStorage.removeItem('institutionName');
-
-    // Перенаправляем на страницу входа
-    window.location.href = 'login.html';
+   		function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
 }
+
+  function applySettings() {
+      document.body.classList.toggle('high-contrast', settings.contrast);
+      document.body.classList.toggle('grayscale', settings.grayscale);
+      document.documentElement.style.setProperty('--animation-duration', settings.animation ? '0.3s' : '0s');
+     document.body.style.fontSize = `${settings.fontSize}em`;
+
+      // Обновляем текст кнопок
+      document.getElementById('toggle-animation').textContent =
+          settings.animation ? 'Выключить' : 'Включить';
+      document.getElementById('toggle-contrast').textContent =
+          settings.contrast ? 'Выключить' : 'Включить';
+      document.getElementById('toggle-grayscale').textContent =
+          settings.grayscale ? 'Выключить' : 'Включить';
+
+      // Сохраняем настройки в localStorage
+      localStorage.setItem('appSettings', JSON.stringify(settings));
+  }
+
+  function loadSettings() {
+      const savedSettings = localStorage.getItem('appSettings');
+      if (savedSettings) {
+          Object.assign(settings, JSON.parse(savedSettings));
+          applySettings();
+      }
+  }
+
+  // Инициализация при загрузке
+  window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+  });
+
+  // Обработчики событий для кнопок
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+      const lightTheme = document.getElementById('light-theme');
+      const mainStyle = document.getElementById('main-style');
+
+      if (lightTheme.disabled) {
+          lightTheme.disabled = false;
+          mainStyle.disabled = true;
+          settings.theme = 'light';
+      } else {
+          lightTheme.disabled = true;
+          mainStyle.disabled = false;
+          settings.theme = 'dark';
+      }
+
+      applySettings();
+  });
+
+  document.getElementById('toggle-animation').addEventListener('click', () => {
+      settings.animation = !settings.animation;
+      applySettings();
+  });
+
+  document.getElementById('toggle-contrast').addEventListener('click', () => {
+      settings.contrast = !settings.contrast;
+      applySettings();
+  });
+
+  document.getElementById('toggle-grayscale').addEventListener('click', () => {
+      settings.grayscale = !settings.grayscale;
+      applySettings();
+  });
+
+  document.getElementById('increase-font').addEventListener('click', () => {
+      settings.fontSize = Math.min(1.5, settings.fontSize + 0.1);
+      applySettings();
+  });
+
+  document.getElementById('decrease-font').addEventListener('click', () => {
+      settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
+      applySettings();
+  });
+
+  function logout() {
+      // Очищаем все данные авторизации
+      localStorage.removeItem('institutionKey');
+      localStorage.removeItem('institutionName');
+
+      // Перенаправляем на страницу входа
+      window.location.href = 'login.html';
+  }
+
+
+
+
 </script>
 </body>
 </html>
