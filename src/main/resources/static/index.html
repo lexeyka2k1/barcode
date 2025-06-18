@@ -2,32 +2,22 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <title>Главная - Сервис штрихкодирования</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-	  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
-    <div class="container">
-        <nav class="sidebar" id="sidebar">
-            <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
-            </ul>
-        </nav>
-        
-        <button class="menu-button" onclick="toggleMenu()">☰</button>
+<div class="container">
+    <nav class="sidebar" id="sidebar">
+        <ul class="menu">
+            <!-- Меню будет заполнено через JavaScript -->
+        </ul>
+    </nav>
+
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
     
         <main class="content">
             <div class="header">
@@ -43,7 +33,7 @@
                         <li><strong>Авторизуйтесь</strong> в системе используя свои учетные данные</li>
                         <li><strong>Выберите раздел</strong> в боковом меню в соответствии с вашими задачами</li>
                         <li><strong>Начните работу</strong> с создания штрих-кодов или проведения инвентаризации</li>
-                        <li><strong>Используйте справочники</strong> для управления базой данных оборудования</li>
+                        <li><strong>Ознакомьтесь с документацией</strong> при необходимости</li>
                     </ol>
                     
                     <div class="quick-actions">
@@ -56,7 +46,7 @@
                 <div class="divider"></div>
                 
                 <section class="guide-section">
-                    <h2>🏷️ Маркировка оборудования</h2>
+                    <h2>🏷️ Маркировка документов</h2>
                     <p>Создание и управление штрих-кодами для учета активов:</p>
                     
                     <div class="feature-cards">
@@ -77,7 +67,7 @@
                 
                 <section class="guide-section">
                     <h2>📋 Инвентаризация</h2>
-                    <p>Проведение учета и сверки оборудования:</p>
+                    <p>Проведение учета и сверки документов:</p>
                     
                     <div class="feature-cards">
                         <div class="feature-card">
@@ -100,105 +90,39 @@
                     <p>Если у вас возникли вопросы или проблемы:</p>
                     <ul class="step-list">
                         <li>Обратитесь к <strong>полной документации</strong> системы</li>
-                        <li>Свяжитесь с <strong>технической поддержкой</strong> по email: support@barcode-service.ru</li>
-                        <li>Или позвоните по телефону: <strong>8-800-123-45-67</strong></li>
+                        <li>Свяжитесь с <strong>технической поддержкой</strong> по email: oka@rounb.ru</li>
                     </ul>
                 </section>
             </div>
         </main>
     </div>
 
-    <script src="theme-switcher.js"></script>
+    <script src="menu.js"></script>
+    <script src="setting.js"></script>
     <script>
+
         function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
-		
-		 const settings = {
-      theme: 'light',
-      animation: true,
-      contrast: false,
-      grayscale: false,
-      fontSize: 1
-    };
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+}
 
-    function applySettings() {
-      document.body.classList.toggle('high-contrast', settings.contrast);
-      document.body.classList.toggle('grayscale', settings.grayscale);
-      document.documentElement.style.setProperty('--animation-duration', settings.animation ? '0.3s' : '0s');
-      document.body.style.fontSize = `${settings.fontSize}em`;
-      
-      // Сохраняем настройки в localStorage
-      localStorage.setItem('appSettings', JSON.stringify(settings));
+        document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
     }
-
-    function toggleMenu() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('collapsed');
-    }
-
-    // Загрузка сохраненных настроек
-    function loadSettings() {
-      const savedSettings = localStorage.getItem('appSettings');
-      if (savedSettings) {
-        Object.assign(settings, JSON.parse(savedSettings));
-        
-        // Применяем загруженные настройки
-        document.getElementById('toggle-animation').checked = settings.animation;
-        document.getElementById('toggle-contrast').checked = settings.contrast;
-        document.getElementById('toggle-grayscale').checked = settings.grayscale;
-        
-        applySettings();
-      }
-    }
-
-    document.getElementById('toggle-theme').addEventListener('click', () => {
-      const lightTheme = document.getElementById('light-theme');
-      const mainStyle = document.getElementById('main-style');
-      
-      if (lightTheme.disabled) {
-        lightTheme.disabled = false;
-        mainStyle.disabled = true;
-        settings.theme = 'light';
-      } else {
-        lightTheme.disabled = true;
-        mainStyle.disabled = false;
-        settings.theme = 'dark';
-      }
-      
-      applySettings();
     });
 
-    document.getElementById('toggle-animation').addEventListener('change', e => {
-      settings.animation = e.target.checked;
-      applySettings();
-    });
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
 
-    document.getElementById('toggle-contrast').addEventListener('change', e => {
-      settings.contrast = e.target.checked;
-      applySettings();
-    });
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
 
-    document.getElementById('toggle-grayscale').addEventListener('change', e => {
-      settings.grayscale = e.target.checked;
-      applySettings();
-    });
-
-    document.getElementById('increase-font').addEventListener('click', () => {
-      settings.fontSize = Math.min(1.5, settings.fontSize + 0.1);
-      applySettings();
-    });
-
-    document.getElementById('decrease-font').addEventListener('click', () => {
-      settings.fontSize = Math.max(0.8, settings.fontSize - 0.1);
-      applySettings();
-    });
-
-    // Инициализация при загрузке
-    window.addEventListener('DOMContentLoaded', () => {
-      loadSettings();
-    });
     </script>
 </body>
 </html>

@@ -2,30 +2,20 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ручная маркировка - OPAC-Global</title>
+    <!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Ручная маркировка - СИУБФ</title>
 	
 	
     <link rel="stylesheet" href="styles.css" id="main-style">
 <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
     <div class="container">
-       <nav class="sidebar" id="sidebar">
+        <nav class="sidebar" id="sidebar">
             <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
+                <!-- Меню будет заполнено через JavaScript -->
             </ul>
         </nav>
 		
@@ -45,15 +35,15 @@
                 </div>
                 
                 <div id="warning" class="warning-message" style="display: none;">
-                    Внимание: Добавлено менее 28 номеров. На листе останутся пустые места.
+                    Внимание: Добавлено менее 40 номеров. На листе останутся пустые места.
                 </div>
                 
                 <div id="numbers-grid" class="numbers-grid"></div>
                 
                 <div class="input-footer">
-                    <input type="text" id="number-input" class="number-input" placeholder="Введите инвентарный номер">
+                    <input type="text" id="number-input" class="number-input" placeholder="Введите инвентарный номер" maxlength="7">
                     <button id="add-button" class="add-button">Добавить</button>
-                    <div class="counter"><span id="count">0</span>/28</div>
+                    <div class="counter"><span id="count">0</span>/40</div>
                 </div>
             </div>
         </main>
@@ -70,10 +60,19 @@
             </div>
         </div>
     </div>
-    
-	<script src="theme-switcher.js"></script>
+
+    <script src="menu.js"></script>
+    <script src="setting.js"></script>
 	
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
+    }
+       });
+
        document.addEventListener('DOMContentLoaded', function() {
     // Получаем все необходимые элементы DOM
     const numberInput = document.getElementById('number-input');
@@ -112,6 +111,11 @@
         
         // Проверяем, что поле не пустое
         if (!number) return;
+
+        if (number.length > 7) {
+        alert('Инвентарный номер не должен превышать 7 символов');
+        return;
+        }
         
         // Проверяем на дубликат
         if (numbers.includes(number)) {
@@ -126,8 +130,8 @@
     // Функция добавления номера
     function addNumber(number) {
         // Проверяем лимит
-        if (numbers.length >= 28) {
-            alert('Достигнуто максимальное количество номеров (28)');
+        if (numbers.length >= 40) {
+            alert('Достигнуто максимальное количество номеров (40)');
             return;
         }
         
@@ -253,12 +257,12 @@
     
     // Функция обновления предупреждения
     function updateWarning() {
-        warningElement.style.display = (numbers.length > 0 && numbers.length < 28) ? 'block' : 'none';
+        warningElement.style.display = (numbers.length > 0 && numbers.length < 40) ? 'block' : 'none';
     }
     
     // Функция обновления кнопки добавления
     function updateAddButton() {
-        addButton.disabled = numbers.length >= 28;
+        addButton.disabled = numbers.length >= 40;
     }
     
     // Функция сохранения номеров в localStorage
@@ -281,6 +285,16 @@ function toggleMenu() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('collapsed');
 }
+
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
+
     </script>
 	
 	

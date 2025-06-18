@@ -26,4 +26,6 @@ public interface InstitutionService {
 
     Institution authenticate(String login, String password);
 
+    Institution updateDatabases(String key, List<Integer> databases, String action);
+
 }

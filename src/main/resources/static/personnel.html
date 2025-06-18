@@ -2,69 +2,143 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление персоналиями - OPAC-Global</title>
+    <!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Управление персоналиями - СИУБФ</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-	  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
-    <div class="container">
-        <nav class="sidebar" id="sidebar">
-            <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
-            </ul>
-        </nav>
-        
-        <button class="menu-button" onclick="toggleMenu()">☰</button>
-    
-        <main class="content">
-            <div class="header">
-                <h1>Управление персоналиями</h1>
-                <p>Выберите действие</p>
-            </div>
-            
-            <div class="marking-options">
-                <div class="option-card" onclick="location.href='registration.html'">
-                    <h3>Зарегистрировать нового пользователя</h3>
-                    <p>Создание новой учетной записи с правами пользователя или администратора</p>
-                </div>
-                
-                <div class="option-card" onclick="location.href='users-list.html'">
-                    <h3>Просмотр всех пользователей</h3>
-                    <p>Просмотр, редактирование и управление зарегистрированными пользователями системы</p>
-                </div>
-            </div>
-        </main>
-    </div>
+<div class="container">
+    <nav class="sidebar" id="sidebar">
+        <ul class="menu">
+            <!-- Меню будет заполнено через JavaScript -->
+        </ul>
+    </nav>
 
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
 
-    <script src="theme-switcher.js"></script>
-    <script>
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
+    <main class="content">
+        <div class="header">
+            <h1>Управление персоналиями</h1>
+            <p>Выберите действие</p>
+        </div>
+
+        <div class="marking-options">
+            <div class="option-card" onclick="location.href='registration.html'">
+                <h3>Зарегистрировать нового пользователя</h3>
+                <p>Создание новой учетной записи с правами пользователя или администратора</p>
+            </div>
+
+            <div class="option-card" onclick="location.href='users-list.html'">
+                <h3>Просмотр всех пользователей</h3>
+                <p>Просмотр, редактирование и управление зарегистрированными пользователями системы</p>
+            </div>
+        </div>
         
-        // Проверка прав администратора
-     /*   document.addEventListener('DOMContentLoaded', function() {
-            const userRole = localStorage.getItem('userRole');
-            if (userRole !== 'admin') {
-                alert('Доступ запрещен! Недостаточно прав.');
-                window.location.href = 'index.html';
+    </main>
+</div>
+
+<script src="menu.js"></script>
+<script src="setting.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+const institutionKey = localStorage.getItem('institutionKey');
+if (!institutionKey) {
+    window.location.href = 'login.html';
+    return;
+}
+});
+
+    function toggleMenu() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+
+ const databasesList = document.getElementById('databases-list');
+    const addDbBtn = document.getElementById('add-db-btn');
+    const addDbInput = document.getElementById('add-db-input');
+    const databasesInput = document.getElementById('databases');
+
+    // Функция для обновления списка БД
+    function updateDatabasesList(databases) {
+        databasesList.innerHTML = '';
+        databases.forEach(db => {
+            const dbItem = document.createElement('div');
+            dbItem.className = 'db-item';
+            dbItem.innerHTML = `
+                <span>${db}</span>
+                <span class="remove-db" data-db="${db}">×</span>
+            `;
+            databasesList.appendChild(dbItem);
+        });
+
+        // Обновляем скрытое поле с БД
+        databasesInput.value = databases.join(', ');
+    }
+
+    // Обработчик клика на кнопку добавления БД
+    addDbBtn.addEventListener('click', () => {
+        addDbBtn.style.display = 'none';
+        addDbInput.style.display = 'block';
+        addDbInput.focus();
+    });
+
+    // Обработчик ввода новых БД
+    addDbInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const newDbs = addDbInput.value.split(',')
+                .map(db => db.trim())
+                .filter(db => db.length > 0);
+
+            if (newDbs.length > 0) {
+                const currentDbs = databasesInput.value.split(',')
+                    .map(db => db.trim())
+                    .filter(db => db.length > 0);
+
+                const updatedDbs = [...new Set([...currentDbs, ...newDbs])];
+                updateDatabasesList(updatedDbs);
             }
-        }); */
-    </script>
+
+            addDbInput.value = '';
+            addDbInput.style.display = 'none';
+            addDbBtn.style.display = 'block';
+        }
+    });
+
+    // Обработчик клика на удаление БД
+    databasesList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-db')) {
+            const dbToRemove = e.target.getAttribute('data-db');
+            const currentDbs = databasesInput.value.split(',')
+                .map(db => db.trim())
+                .filter(db => db.length > 0 && db !== dbToRemove);
+
+            updateDatabasesList(currentDbs);
+        }
+    });
+
+    // Инициализация начального списка БД
+    const initialDbs = databasesInput.value.split(',')
+        .map(db => db.trim())
+        .filter(db => db.length > 0);
+    updateDatabasesList(initialDbs);
+});
+
+       function logout() {
+// Очищаем все данные авторизации
+localStorage.removeItem('institutionKey');
+localStorage.removeItem('institutionName');
+
+// Перенаправляем на страницу входа
+window.location.href = 'login.html';
+}
+
+
+
+
+</script>
+
 </body>
 </html>
