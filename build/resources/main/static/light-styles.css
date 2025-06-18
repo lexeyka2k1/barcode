@@ -78,6 +78,8 @@ input[type="text"], .number-input {
   background: var(--menu-item-bg);
 }
 
+
+
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -111,6 +113,13 @@ body {
   transition: transform 0.3s ease;
 }
 
+
+      #kod1 {
+          background-color: #ffffff;
+          border: 1px solid #45A049;
+      }
+
+
 .sidebar.collapsed {
   transform: translateX(-100%);
 }
@@ -141,27 +150,24 @@ body {
 
 /* Меню */
 .menu {
-  margin-top: 20px;
-  list-style: none;
-  padding: 0;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
 .menu li {
-  margin-bottom: 10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e1e1;
 }
 
-.menu a {
-  color: var(--text-color);
-  text-decoration: none;
-  display: block;
-  padding: 10px 15px;
-  background: var(--menu-item-bg);
-  border-radius: 4px;
-  transition: all 0.2s ease;
+.menu li a {
+    color: #333;
+    text-decoration: none;
+    display: block;
 }
 
-.menu a:hover {
-  background: var(--menu-item-hover);
+.menu li a:hover {
+    color: #4caf50;
 }
 
 .menu a.active {
@@ -1359,95 +1365,186 @@ input[type="password"]:focus {
     cursor: pointer;
 }
 
-
-/* Адаптация для мобильных устройств */
-@media (max-width: 768px) {
-  .action-buttons-container {
-    justify-content: space-between;
-    gap: 8px;
-  }
-  
-  .clear-button,
-  .print-button {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
-  .number-input {
-    min-width: auto;
-    width: 100%;
-  }
-  
-  .sidebar {
-    width: 220px;
-  }
-  
-  .content {
-    margin-left: 220px;
-    width: calc(100% - 220px);
-  }
-  
-   .registration-form {
-        padding: 20px;
-    }
-    
-    .form-group input {
-        padding: 10px 12px;
-    }
-	
-	 .auto-form-table td {
-        display: block;
-        width: 100%;
-        padding: 8px 0;
-    }
-    
-    .auto-form-actions {
-        flex-direction: column;
-    }
-    
-    .auto-form-button {
-        width: 100%;
-    }
-	
-	 #settings-panel {
-        padding: 20px;
-      }
-      
-      .setting-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      .setting-control {
-        width: 100%;
-        justify-content: space-between;
-      }
-	  
-	   .users-table {
-        display: block;
-        overflow-x: auto;
-    }
-    
-    .action-button {
-        display: block;
-        width: 100%;
-        margin-bottom: 5px;
-    }
-    
-    .users-table td:last-child {
-        white-space: nowrap;
-    }
-	
-	.bulk-actions {
-        flex-wrap: wrap;
-    }
-    
-    .select-all-button,
-    .delete-selected-button,
-    .delete-all-button {
-        flex: 1 1 100%;
-        margin-bottom: 5px;
-    }
+.database-selector {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
+
+.database-selector label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.database-selector select {
+    width: 100%;
+    padding: 10px 5px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+.databases-container {
+    margin-bottom: 15px;
+}
+
+.databases-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.db-item {
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.remove-db {
+    cursor: pointer;
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.add-db-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-db-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+.db-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #c0c0c0;
+    background-color: #ffffff;
+    color: #333333;
+    font-size: 14px;
+    max-width: 150px;
+    transition: border-color 0.2s ease;
+}
+
+.db-select:disabled {
+    background-color: #f5f5f5;
+    color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+/* Стили для кастомного выпадающего списка */
+.custom-db-select {
+    position: relative;
+    display: inline-block;
+    min-width: 150px;
+}
+
+.db-display {
+    padding: 4px 8px;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #333333;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.db-display:hover {
+    border-color: #909090;
+}
+
+.db-dropdown {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.db-dropdown.show {
+    display: block;
+}
+
+.db-item {
+    padding: 6px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #333333;
+    transition: background-color 0.2s ease;
+}
+
+.db-item:hover {
+    background-color: #f0f0f0;
+}
+
+.delete-db {
+    color: #e74c3c;
+    cursor: pointer;
+    margin-left: 10px;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.delete-db:hover {
+    color: #c0392b;
+}
+
+.add-db-container {
+    padding: 8px 12px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #f9f9f9;
+}
+
+.add-db-input {
+    width: 100%;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border: 1px solid #c0c0c0;
+    color: #333333;
+    border-radius: 3px;
+    transition: border-color 0.2s ease;
+}
+
+.add-db-input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.no-dbs {
+    color: #909090;
+    font-style: italic;
+    padding: 8px 12px;
+    text-align: center;
+}
+
+
+
+
 

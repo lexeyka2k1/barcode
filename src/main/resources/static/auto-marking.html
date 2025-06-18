@@ -2,29 +2,19 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <title>Автоматическая маркировка - OPAC-Global</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
     <link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-	  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+    <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
   
 </head>
 <body>
     <div class="container">
         <nav class="sidebar" id="sidebar">
             <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
+                <!-- Меню будет заполнено через JavaScript -->
             </ul>
         </nav>
         
@@ -48,11 +38,11 @@
                             </tr>
                             <tr>
                                 <td><label for="kod1">Начальный код:</label></td>
-                                <td><input type="text" id="kod1" name="kod1" maxlength="6"></td>
+                                <td><input type="text" id="kod1" name="kod1" maxlength="7"></td>
                             </tr>
                             <tr>
                                 <td><label for="kod2">Конечный код:</label></td>
-                                <td><input type="text" id="kod2" name="kod2" maxlength="6"></td>
+                                <td><input type="text" id="kod2" name="kod2" readonly> </td>
                             </tr>
                             <tr>
                                 <td><label for="kol">Количество штрих-кодов:</label></td>
@@ -60,12 +50,12 @@
                             </tr>
                             <tr>
                                 <td><label for="kol_str">Количество страниц:</label></td>
-                                <td><input type="text" id="kol_str" name="kol_str"></td>
+                                <td><input type="text" id="kol_str" name="kol_str" readonly></td>
                             </tr>
                         </table>
                         
                         <div class="auto-form-actions">
-                            <button type="button" onclick="refreshPage()" class="auto-form-button secondary">Обновить</button>
+                        <!--    <button type="button" onclick="refreshPage()" class="auto-form-button secondary">Обновить</button> -->
                             <button type="button" onclick="printBarcodes()" class="auto-form-button primary">Печать штрих-кодов</button>
                         </div>
                     </form>
@@ -74,7 +64,8 @@
         </main>
     </div>
 
-    <script src="theme-switcher.js"></script>
+    <script src="menu.js"></script>
+    <script src="setting.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
     const institutionKey = localStorage.getItem('institutionKey');
@@ -98,23 +89,23 @@
     const defaultStart = '000001';
 
     kod1Field.value = lastEndCode
-        ? String(Number(lastEndCode) + 1).padStart(6, '0')
+        ? String(Number(lastEndCode) + 1).padStart(7, '0')
         : defaultStart;
 
     // Автоматический расчет
     const calculateFields = () => {
         const startNum = Number(kod1Field.value);
-        const count = 28; // Фиксированное количество кодов
+        const count = 40; // Фиксированное количество кодов
         const endNum = startNum + count - 1;
 
-        kod2Field.value = String(endNum).padStart(6, '0');
+        kod2Field.value = String(endNum).padStart(7, '0');
         kolField.value = count;
         kolStrField.value = '1'; // Фиксированно 1 страница
     };
 
     // Обработчики событий
     kod1Field.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7);
         calculateFields();
     });
 
@@ -129,7 +120,7 @@
 function printBarcodes() {
     const institutionKey = localStorage.getItem('institutionKey');
     const startCode = document.getElementById('kod1').value;
-    const count = 27;
+    const count = 40;
 
     // Генерируем номера для печати
     const numbers = [];
@@ -148,6 +139,15 @@ function printBarcodes() {
 
 function refreshPage() {
     window.location.reload();
+}
+
+        function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
 }
     </script>
 </body>

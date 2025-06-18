@@ -2,28 +2,18 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Маркировка - OPAC-Global</title>
+    <!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Маркировка - СИУБФ</title>
     <link rel="stylesheet" href="styles.css" id="main-style">
 	<link rel="stylesheet" href="light-styles.css" id="light-theme" disabled>
-	  <link rel="stylesheet" href="high-contrast.css">
-  <link rel="stylesheet" href="grayscale.css">
+	  <link rel="stylesheet" href="grayscale.css" id="grayscale-style" disabled>
+    <link rel="stylesheet" href="high-contrast.css" id="high-contrast-style" disabled>
 </head>
 <body>
     <div class="container">
         <nav class="sidebar" id="sidebar">
             <ul class="menu">
-                <li><a href="index.html">Главная</a></li>
-                <li><a href="marking.html">Маркировка</a></li>
-                <li><a href="inventory.html">Инвентаризация</a></li>
-                <li><a href="personnel.html">Персоналии</a></li>
-				<li><a href="setting.html">Настройки</a></li>
-				<li> <a href="login.html">Выход</a></li>
-				<li>
-                    <button id="theme-toggle" class="theme-toggle">
-                        <span class="theme-icon">🌓</span> Сменить тему
-                    </button>
-                </li>
+                <!-- Меню будет заполнено через JavaScript -->
             </ul>
         </nav>
     
@@ -50,18 +40,33 @@
             
         </main>
     </div>
-	
-	<script src="theme-switcher.js"></script>
+
+    <script src="menu.js"></script>
+    <script src="setting.js"></script>
  
     <script>
-        function toggleMenu() {
-            document.getElementById("menu").classList.toggle("open");
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+    const institutionKey = localStorage.getItem('institutionKey');
+    if (!institutionKey) {
+        window.location.href = 'login.html';
+        return;
+    }
+      });
+
 		
 		function toggleMenu() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('collapsed');
 }
+           function logout() {
+    // Очищаем все данные авторизации
+    localStorage.removeItem('institutionKey');
+    localStorage.removeItem('institutionName');
+
+    // Перенаправляем на страницу входа
+    window.location.href = 'login.html';
+}
+
     </script>
 </body>
 </html>

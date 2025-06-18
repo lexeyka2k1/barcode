@@ -56,4 +56,29 @@ public class InstitutionServiceImpl implements InstitutionService {
         }
         return null;
     }
+
+    @Override
+    public Institution updateDatabases(String key, List<Integer> databases, String action) {
+        Institution institution = repository.findInstitutionByKey(key);
+        if (institution == null) {
+            throw new RuntimeException("Institution not found");
+        }
+
+        List<Integer> currentDbs = institution.getAvailableDatabases();
+
+        if ("add".equalsIgnoreCase(action)) {
+            for (Integer db : databases) {
+                if (!currentDbs.contains(db)) {
+                    currentDbs.add(db);
+                }
+            }
+        } else if ("remove".equalsIgnoreCase(action)) {
+            currentDbs.removeAll(databases);
+        } else {
+            throw new RuntimeException("Invalid action: " + action);
+        }
+
+        institution.setAvailableDatabases(currentDbs);
+        return updateInstitution(institution);
+    }
 }

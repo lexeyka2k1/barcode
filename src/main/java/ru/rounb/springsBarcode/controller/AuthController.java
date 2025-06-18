@@ -16,12 +16,20 @@ public class AuthController {
     private final InstitutionService institutionService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        Institution user = institutionService.authenticate(request.getLogin(), request.getPassword());
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        Institution user = institutionService.authenticate(
+                request.getLogin(),
+                request.getPassword()
+        );
+
         if (user != null) {
-            return ResponseEntity.ok(new AuthResponse(user.getKey(), user.getName()));
+            return ResponseEntity.ok(new AuthResponse(
+                    user.getKey(),
+                    user.getName(),
+                    user.getRole().name()
+            ));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(401).build();
     }
 }
 
